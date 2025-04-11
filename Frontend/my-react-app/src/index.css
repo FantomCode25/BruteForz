@@ -1,68 +1,166 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+    --primary-color: #E91E63;  /* Pink instead of blue */
+    --secondary-color: #4CAF50; /* Green, kept from original */
+    --accent-color: #FF5252;    /* Brighter red */
+    --background-color: #FFF9FB; /* Light pink-tinted background */
+    --text-color: #333333;
+    --card-bg: #FFFFFF;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --border-radius: 6px;
   }
-  a:hover {
-    color: #747bff;
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
+  
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    font-size: 14px;  /* Reduced from default */
+  }
+  
+  .container {
+    max-width: 100%;  /* Full width on mobile */
+    margin: 0 auto;
+    padding: 0 16px;  /* Reduced padding */
+  }
+  
+  .card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 16px;   /* Reduced padding */
+    margin-bottom: 16px; /* Reduced margin */
+  }
+  
   button {
-    background-color: #f9f9f9;
+    cursor: pointer;
+    padding: 8px 14px;  /* Smaller buttons for mobile */
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    font-size: 0.9rem;  /* Smaller font */
   }
-}
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #D81B60;  /* Darker pink */
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #388E3C;  /* Darker green */
+  }
+  
+  .btn-accent {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  .btn-accent:hover {
+    background-color: #FF1744;  /* Brighter red on hover */
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+  }
+  
+  .btn-outline:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    padding: 16px;  /* Reduced padding */
+  }
+  
+  /* Additional mobile-specific styles */
+  h1 {
+    font-size: 1.5rem;  /* Smaller heading size */
+    margin-bottom: 0.75rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Responsive grid system for mobile */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;  /* Single column layout */
+    gap: 16px;
+  }
+  
+  /* Form elements for mobile */
+  input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+  }
+  
+  /* Media queries for very small devices */
+  @media (max-width: 320px) {
+    body {
+      font-size: 13px;
+    }
+    
+    button {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+    
+    .card {
+      padding: 12px;
+    }
+    
+    h1 {
+      font-size: 1.3rem;
+    }
+    
+    h2 {
+      font-size: 1.15rem;
+    }
+  }
+  
+  /* Media query for medium-sized mobile devices */
+  @media (min-width: 375px) and (max-width: 480px) {
+    .container {
+      padding: 0 12px;
+    }
+  }

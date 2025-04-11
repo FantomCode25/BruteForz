@@ -1,0 +1,180 @@
+/* Dashboard.css - Mobile-optimized grid version */
+
+.dashboard {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Dashboard content styling - now before dashboard buttons */
+.dashboard-content {
+  padding: 1rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.dashboard-content h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #4caf50; /* Green */
+}
+
+.dashboard-content h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #4caf50; /* Green */
+}
+
+/* Dashboard buttons styling */
+.dashboard-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 5px;
+}
+
+.dashboard-buttons button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  height: 60px;
+}
+
+.dashboard-buttons button:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.dashboard-buttons button.active {
+  background-color: #4caf50; /* Green */
+  color: white;
+}
+
+.dashboard-buttons .sos-button {
+  background-color: #ff4081; /* Pink */
+  color: white;
+}
+
+.dashboard-buttons .sos-button:hover {
+  background-color: #e91e63; /* Darker pink */
+}
+
+.dashboard-buttons .sos-button.active {
+  background-color: #d81b60; /* Even darker pink */
+}
+
+/* Icon placeholders - replace with your actual icons */
+.icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.summary-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'/%3E%3C/svg%3E");
+}
+
+.games-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z'/%3E%3C/svg%3E");
+}
+
+.routine-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z'/%3E%3C/svg%3E");
+}
+
+.sos-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='currentColor' d='M14.5 2L16 3.5 13.5 6 16 8.5 14.5 10 12 7.5 9.5 10 8 8.5 10.5 6 8 3.5 9.5 2 12 4.5 14.5 2zM12 11l10 10-1.5 1.5L12 14l-8.5 8.5L2 21l10-10z'/%3E%3C/svg%3E");
+}
+
+/* Remove hamburger menu */
+.hamburger-menu {
+  display: none;
+}
+
+/* Small phones */
+@media (max-width: 375px) {
+  .dashboard {
+    padding: 0.4rem;
+  }
+  
+  .dashboard-content {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .dashboard-content h1 {
+    font-size: 1.3rem;
+  }
+  
+  .dashboard-content h2 {
+    font-size: 1rem;
+  }
+  
+  .dashboard-buttons {
+    gap: 6px;
+    padding: 3px;
+  }
+  
+  .dashboard-buttons button {
+    padding: 6px;
+    font-size: 0.75rem;
+    height: 55px;
+  }
+  
+  .icon {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 3px;
+  }
+}
+
+/* For larger screens - change to horizontal layout */
+@media (min-width: 769px) {
+  .dashboard-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .dashboard-content h2 {
+    font-size: 1.4rem;
+  }
+  
+  .dashboard-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 800px;
+  }
+  
+  .dashboard-buttons button {
+    height: 65px;
+    font-size: 0.9rem;
+  }
+  
+  .icon {
+    width: 22px;
+    height: 22px;
+  }
+}

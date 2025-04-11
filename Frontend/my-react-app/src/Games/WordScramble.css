@@ -1,0 +1,101 @@
+.game-timer {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #ff4d6d; /* Pinkish red */
+}
+
+.scrambled-word {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 15px 0;
+  letter-spacing: 3px;
+  color: #e73c7e; /* Dark pink */
+}
+
+.word-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 280px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.word-form input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid #ff90b3; /* Light pink */
+  border-radius: 4px;
+  outline: none;
+  text-align: center;
+}
+
+.word-form input:focus {
+  border-color: #e73c7e; /* Dark pink */
+  box-shadow: 0 0 4px rgba(231, 60, 126, 0.5);
+}
+
+.submit-button {
+  background-color: #4ade80; /* Bright green */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.submit-button:hover {
+  background-color: #3cbe70; /* Darker green */
+}
+
+.skip-button {
+  background-color: #ffa69e; /* Light coral/pink */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.skip-button:hover {
+  background-color: #ff8c8c; /* Medium coral/pink */
+}
+
+.feedback {
+  margin-top: 15px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ff4d6d; /* Pinkish red */
+}
+
+.feedback.correct {
+  color: #4ade80; /* Bright green */
+}
+
+/* Media query for very small screens */
+@media (max-width: 320px) {
+  .scrambled-word {
+    font-size: 1.7rem;
+    letter-spacing: 2px;
+  }
+  
+  .word-form {
+    max-width: 250px;
+  }
+  
+  .word-form input {
+    padding: 8px 10px;
+  }
+  
+  .submit-button {
+    padding: 8px 15px;
+  }
+}
