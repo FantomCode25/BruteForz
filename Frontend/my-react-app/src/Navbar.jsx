@@ -15,18 +15,21 @@ function Navbar({ user }) {
   };
 
   return (
-    <nav className="navbar">
+    <div className="echomind-navbar">
       <div className="navbar-left">
-        <h2 className="logo">🧠 MemoryCare</h2>
+        {/* Left section - can be used for menu toggle or other elements */}
       </div>
-
+      <div className="app-brand">
+        <span className="app-logo">🧠</span>
+        <h1>EchoMind</h1>
+      </div>
       <div className="navbar-right">
-        {user && <span className="user-greeting">Hi, {user.name}</span>}
+        {user && <span className="user-greeting">Welcome, {user.name}</span>}
         <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>
       </div>
-    </nav>
+    </div>
   );
 }
 

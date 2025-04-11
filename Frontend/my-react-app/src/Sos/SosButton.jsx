@@ -122,55 +122,101 @@ const SosButton = ({ user, apiUrl = 'http://localhost:8000/api' }) => {
   };
 
   return (
-    <div className={`sos-container ${expanded ? 'expanded' : ''}`}>
-      {countdown !== null ? (
-        <div className="countdown-container">
-          <div className="countdown-timer">
-            <span className="countdown-number">{countdown}</span>
-            <span className="countdown-text">Sending SOS in {countdown} seconds</span>
-          </div>
-          <button 
-            className="cancel-button"
-            onClick={cancelSos}
-          >
-            Cancel
-          </button>
-        </div>
-      ) : (
-        <>
-          <button 
-            className={`sos-button ${sending ? 'sending' : ''}`}
-            onClick={startSosCountdown}
-            disabled={sending}
-          >
-            {sending ? 'Sending...' : 'SOS'}
-          </button>
-          
-          {status && (
-            <div className={`status-message ${status.type}`}>
-              {status.message}
+    <div className="sos-page-container">
+      <div className="sos-info-header">
+        <h1>Memory Helper Emergency Alert</h1>
+        <p className="sos-description">
+          This SOS button is designed specifically for individuals with dementia and Alzheimer's. 
+          In moments of disorientation or emergency, a single press can alert caregivers with your 
+          exact location and status.
+        </p>
+      </div>
+
+      <div className={`sos-container ${expanded ? 'expanded' : ''}`}>
+        {countdown !== null ? (
+          <div className="countdown-container">
+            <div className="countdown-timer">
+              <span className="countdown-number">{countdown}</span>
+              <span className="countdown-text">Sending SOS in {countdown} seconds</span>
             </div>
-          )}
-        </>
-      )}
-      
-      {expanded && !countdown && (
-        <div className="sos-details">
-          <div className="location-status">
-            {location ? (
-              <span className="available">✓ Location available</span>
-            ) : (
-              <span className="unavailable">✗ Location unavailable</span>
+            <button 
+              className="cancel-button"
+              onClick={cancelSos}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <>
+            <button 
+              className={`sos-button ${sending ? 'sending' : ''}`}
+              onClick={startSosCountdown}
+              disabled={sending}
+              aria-label="Send emergency alert"
+            >
+              {sending ? 'Sending...' : 'SOS'}
+            </button>
+            
+            {status && (
+              <div className={`status-message ${status.type}`}>
+                {status.message}
+              </div>
+            )}
+          </>
+        )}
+        
+        {expanded && !countdown && (
+          <div className="sos-details">
+            <div className="location-status">
+              {location ? (
+                <span className="available">✓ Location available</span>
+              ) : (
+                <span className="unavailable">✗ Location unavailable</span>
+              )}
+            </div>
+            
+            {battery !== null && (
+              <div className="battery-status">
+                Battery: {battery}%
+              </div>
             )}
           </div>
-          
-          {battery !== null && (
-            <div className="battery-status">
-              Battery: {battery}%
-            </div>
-          )}
+        )}
+      </div>
+
+      <div className="sos-info-footer">
+        <h2>How This Helps</h2>
+        <div className="info-cards-container">
+          <div className="info-card">
+            <div className="info-icon location-icon"></div>
+            <h3>Instant Location Sharing</h3>
+            <p>Automatically sends your precise location to designated emergency contacts.</p>
+          </div>
+          <div className="info-card">
+            <div className="info-icon alert-icon"></div>
+            <h3>Quick Emergency Response</h3>
+            <p>Alerts caregivers immediately, reducing response time during critical moments.</p>
+          </div>
+          <div className="info-card">
+            <div className="info-icon safety-icon"></div>
+            <h3>Enhanced Independence</h3>
+            <p>Provides peace of mind for both users and caregivers, allowing more freedom with safety.</p>
+          </div>
         </div>
-      )}
+        <div className="usage-instructions">
+          <h3>When to Use</h3>
+          <ul>
+            <li>If you feel lost or disoriented</li>
+            <li>During medical emergencies</li>
+            <li>When you need immediate assistance</li>
+            <li>If you're feeling unsafe or vulnerable</li>
+          </ul>
+          <p className="caregiver-note">
+            <strong>For Caregivers:</strong> When an alert is triggered, you'll receive the user's 
+            current location, battery status, and timestamp via your connected application or SMS.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

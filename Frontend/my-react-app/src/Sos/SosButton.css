@@ -1,94 +1,238 @@
-.sos-container {
+/* Enhanced SOS Button - Modern Emergency Interface
+ * High-quality professional design with focus on accessibility,
+ * animations, and visual hierarchy - now with explanatory text
+ */
+
+/* Page container styles */
+.sos-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  /* Header info styles */
+  .sos-info-header {
+    text-align: center;
+    margin-bottom: 32px;
+    width: 100%;
+  }
+  
+  .sos-info-header h1 {
+    color: #2a2a2a;
+    margin-bottom: 16px;
+    font-size: 32px;
+    font-weight: 700;
+  }
+  
+  .sos-description {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #444;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* SOS Button Container */
+  .sos-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 10px;
+    max-width: 320px;
+    margin: 20px auto 40px;
+    padding: 24px;
+    z-index: 100;
+    border-radius: 16px;
+    background: radial-gradient(circle at center, rgba(250, 250, 250, 0.9) 0%, rgba(245, 245, 245, 0.8) 100%);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sos-container::before {
+    content: "Emergency Alert System";
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
   
   .sos-container.expanded {
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 250, 250, 0.9) 100%);
+    border-radius: 24px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(255, 59, 48, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
   }
   
+  .sos-container.expanded::after {
+    content: "Tap Cancel to stop the alert";
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-top: 20px;
+    font-style: italic;
+  }
+  
+  /* Enhanced SOS Button */
   .sos-button {
-    background-color: #ff3b30;
+    background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 100px;
-    height: 100px;
-    font-size: 24px;
+    width: 130px;
+    height: 130px;
+    font-size: 32px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(255, 59, 48, 0.4);
-    transition: all 0.2s ease;
+    box-shadow: 0 8px 20px rgba(255, 59, 48, 0.5), 0 0 0 6px rgba(255, 59, 48, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    animation: subtle-float 3s ease-in-out infinite;
+  }
+  
+  @keyframes subtle-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  .sos-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+  }
+  
+  .sos-button::after {
+    content: "Emergency";
+    position: absolute;
+    bottom: 28px;
+    font-size: 14px;
+    font-weight: normal;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
   }
   
   .sos-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(255, 59, 48, 0.5);
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 12px 24px rgba(255, 59, 48, 0.6), 0 0 0 8px rgba(255, 59, 48, 0.2), inset 0 -2px 6px rgba(0, 0, 0, 0.2);
   }
   
   .sos-button:active {
-    transform: scale(0.95);
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 6px 12px rgba(255, 59, 48, 0.4), 0 0 0 4px rgba(255, 59, 48, 0.2), inset 0 2px 6px rgba(0, 0, 0, 0.3);
   }
   
   .sos-button.sending {
-    opacity: 0.7;
+    opacity: 0.8;
     cursor: not-allowed;
-    animation: pulse 1.5s infinite;
+    animation: pulse 1.2s infinite;
+    background: linear-gradient(135deg, #ff3b30 30%, #ff8c42 70%, #ff3b30 100%);
+    background-size: 200% 200%;
+    animation: pulse 1.5s infinite, gradientShift 3s infinite alternate;
+  }
+  
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 100% 50%;
+    }
   }
   
   @keyframes pulse {
     0% {
       transform: scale(1);
+      box-shadow: 0 8px 20px rgba(255, 59, 48, 0.5), 0 0 0 4px rgba(255, 59, 48, 0.2);
     }
     50% {
       transform: scale(1.05);
+      box-shadow: 0 12px 28px rgba(255, 59, 48, 0.6), 0 0 0 6px rgba(255, 59, 48, 0.3);
     }
     100% {
       transform: scale(1);
+      box-shadow: 0 8px 20px rgba(255, 59, 48, 0.5), 0 0 0 4px rgba(255, 59, 48, 0.2);
     }
   }
   
+  /* Status Messages */
   .status-message {
-    margin-top: 16px;
-    padding: 10px 16px;
-    border-radius: 8px;
+    margin-top: 24px;
+    padding: 14px 20px;
+    border-radius: 12px;
     text-align: center;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.4s ease;
     width: 100%;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
   
   .status-message.success {
-    background-color: #4cd964;
+    background: linear-gradient(to right, #34c759, #4cd964);
     color: white;
   }
   
   .status-message.error {
-    background-color: #ff3b30;
+    background: linear-gradient(to right, #ff3b30, #ff2d55);
     color: white;
   }
   
   .status-message.info {
-    background-color: #007aff;
+    background: linear-gradient(to right, #007aff, #5ac8fa);
     color: white;
+  }
+  
+  .status-message::before {
+    margin-right: 8px;
+    font-weight: bold;
+  }
+  
+  .status-message.success::before {
+    content: "✓";
+  }
+  
+  .status-message.error::before {
+    content: "✕";
+  }
+  
+  .status-message.info::before {
+    content: "ℹ";
   }
   
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translateY(-12px);
     }
     to {
       opacity: 1;
@@ -96,141 +240,395 @@
     }
   }
   
+  /* SOS Details */
   .sos-details {
-    margin-top: 16px;
+    margin-top: 24px;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    background-color: rgba(240, 240, 240, 0.7);
+    padding: 16px;
+    border-radius: 12px;
+    animation: slideIn 0.5s ease;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   .location-status,
   .battery-status {
-    font-size: 14px;
+    font-size: 16px;
     color: #333;
+    display: flex;
+    align-items: center;
+  }
+  
+  .location-status::before {
+    content: "📍";
+    margin-right: 10px;
+    font-size: 18px;
+  }
+  
+  .battery-status::before {
+    content: "🔋";
+    margin-right: 10px;
+    font-size: 18px;
   }
   
   .location-status .available {
-    color: #4cd964;
+    color: #34c759;
+    font-weight: 600;
   }
   
   .location-status .unavailable {
     color: #ff3b30;
+    font-weight: 600;
   }
   
+  /* Countdown Container */
   .countdown-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    animation: fadeIn 0.3s ease;
+    gap: 24px;
+    animation: fadeIn 0.4s ease;
     width: 100%;
+    padding: 20px 16px;
+    background-color: rgba(250, 250, 250, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .countdown-container::before {
+    content: "EMERGENCY COUNTDOWN";
+    font-size: 14px;
+    color: #ff3b30;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: -5px;
   }
   
   .countdown-timer {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
   }
   
   .countdown-number {
-    font-size: 48px;
+    font-size: 72px;
     font-weight: bold;
     color: #ff3b30;
+    text-shadow: 0 2px 4px rgba(255, 59, 48, 0.3);
+    position: relative;
+  }
+  
+  .countdown-number::after {
+    content: "";
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+    background: radial-gradient(circle, rgba(255, 59, 48, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulseLight 1s infinite;
+  }
+  
+  @keyframes pulseLight {
+    0% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
   }
   
   .countdown-text {
-    font-size: 16px;
-    margin-top: 8px;
+    font-size: 18px;
+    margin-top: 12px;
     color: #333;
     text-align: center;
+    font-weight: 500;
   }
   
   .cancel-button {
     background-color: #333;
     color: white;
     border: none;
-    border-radius: 20px;
-    padding: 8px 24px;
-    font-size: 16px;
+    border-radius: 30px;
+    padding: 14px 36px;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
-    max-width: 200px;
+    max-width: 220px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .cancel-button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
   }
   
   .cancel-button:hover {
-    background-color: #555;
+    background-color: #444;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .cancel-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Footer Info Section */
+  .sos-info-footer {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 20px;
+    padding: 24px 16px;
+    border-radius: 20px;
+    background-color: #f8f8f8;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  }
+  
+  .sos-info-footer h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+    font-size: 26px;
+  }
+  
+  .info-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  
+  .info-card {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+    border-top: 4px solid #ff3b30;
+  }
+  
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .info-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffe8e8;
+    position: relative;
+  }
+  
+  .info-icon::before {
+    font-size: 28px;
+  }
+  
+  .location-icon::before {
+    content: "📍";
+  }
+  
+  .alert-icon::before {
+    content: "🚨";
+  }
+  
+  .safety-icon::before {
+    content: "🛡️";
+  }
+  
+  .info-card h3 {
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 20px;
+  }
+  
+  .info-card p {
+    color: #555;
+    line-height: 1.5;
+  }
+  
+  .usage-instructions {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  
+  .usage-instructions h3 {
+    margin-bottom: 16px;
+    color: #333;
+    font-size: 22px;
+    text-align: center;
+  }
+  
+  .usage-instructions ul {
+    columns: 2;
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 20px;
+  }
+  
+  .usage-instructions li {
+    padding: 8px 4px 8px 30px;
+    position: relative;
+    margin-bottom: 8px;
+    color: #444;
+  }
+  
+  .usage-instructions li::before {
+    content: "✓";
+    position: absolute;
+    left: 8px;
+    color: #ff3b30;
+    font-weight: bold;
+  }
+  
+  .caregiver-note {
+    background: #f0f0f0;
+    border-left: 4px solid #007aff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
   }
   
   /* Mobile Responsive Styles */
   @media (max-width: 767px) {
+    .sos-info-header h1 {
+      font-size: 28px;
+    }
+    
+    .sos-description {
+      font-size: 16px;
+    }
+    
     .sos-container {
-      max-width: 100%;
-      padding: 10px 5px;
+      max-width: 280px;
+      padding: 20px;
+    }
+    
+    .sos-container::before {
+      font-size: 14px;
     }
     
     .sos-button {
-      width: 80px;
-      height: 80px;
-      font-size: 20px;
+      width: 110px;
+      height: 110px;
+      font-size: 28px;
     }
     
-    .countdown-number {
-      font-size: 36px;
-    }
-    
-    .countdown-text {
-      font-size: 14px;
-    }
-    
-    .status-message {
-      font-size: 14px;
-      padding: 8px 12px;
-    }
-    
-    .sos-details {
+    .sos-button::after {
+      bottom: 22px;
       font-size: 12px;
     }
     
-    .cancel-button {
-      padding: 6px 18px;
-      font-size: 14px;
+    .countdown-number {
+      font-size: 56px;
+    }
+    
+    .countdown-text {
+      font-size: 16px;
+    }
+    
+    .info-cards-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .info-card {
+      width: 100%;
+    }
+    
+    .usage-instructions ul {
+      columns: 1;
     }
   }
   
   /* Small smartphones */
   @media (max-width: 375px) {
+    .sos-info-header h1 {
+      font-size: 24px;
+    }
+    
+    .sos-container {
+      max-width: 260px;
+    }
+    
     .sos-button {
-      width: 70px;
-      height: 70px;
-      font-size: 18px;
-    }
-    
-    .countdown-number {
-      font-size: 32px;
-    }
-    
-    .countdown-text {
-      font-size: 12px;
+      width: 100px;
+      height: 100px;
+      font-size: 26px;
     }
   }
   
   /* Touch device optimizations */
   @media (hover: none) {
-    .sos-button:hover {
+    .sos-button:hover, 
+    .info-card:hover {
       transform: none;
-      box-shadow: 0 4px 8px rgba(255, 59, 48, 0.4);
     }
     
     .cancel-button:hover {
       background-color: #333;
+      transform: none;
     }
     
     /* Make buttons larger on touch devices for easier tapping */
     .cancel-button {
-      padding: 12px 24px;
-      min-height: 44px; /* Apple's recommendation for touch targets */
+      padding: 16px 32px;
+      min-height: 56px; /* Apple's recommendation for touch targets */
+    }
+    
+    .sos-button {
+      min-height: 120px;
+      min-width: 120px;
     }
   }
   
@@ -240,36 +638,80 @@
     .cancel-button {
       -webkit-tap-highlight-color: transparent;
     }
+    
+    /* iOS accessibility enhancement */
+    .sos-button:focus,
+    .cancel-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.5), 0 6px 16px rgba(255, 59, 48, 0.5);
+    }
   }
   
-  /* Landscape orientation on mobile */
-  @media (max-height: 500px) and (orientation: landscape) {
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .sos-info-header h1, 
+    .sos-info-footer h2,
+    .info-card h3,
+    .usage-instructions h3 {
+      color: #f0f0f0;
+    }
+    
+    .sos-description,
+    .info-card p,
+    .usage-instructions li {
+      color: #dddddd;
+    }
+    
+    .sos-container::before {
+      color: #ffffff;
+    }
+    
+    .sos-page-container {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    
     .sos-container {
-      flex-direction: row;
-      max-width: 100%;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
+      background: radial-gradient(circle at center, rgba(50, 50, 50, 0.9) 0%, rgba(40, 40, 40, 0.8) 100%);
     }
     
     .sos-container.expanded {
-      flex-direction: column;
-      align-items: center;
+      background: linear-gradient(135deg, rgba(40, 40, 40, 0.95) 0%, rgba(30, 30, 30, 0.9) 100%);
+      border: 1px solid rgba(70, 70, 70, 0.8);
     }
     
-    .sos-button {
-      width: 60px;
-      height: 60px;
-      font-size: 16px;
+    .sos-info-footer {
+      background-color: #1e1e1e;
+    }
+    
+    .info-card {
+      background: #2a2a2a;
+      border-top: 4px solid #ff3b30;
+    }
+    
+    .usage-instructions {
+      background: rgba(40, 40, 40, 0.8);
+    }
+    
+    .caregiver-note {
+      background: #2a2a2a;
+      color: #dddddd;
     }
     
     .countdown-container {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
+      background-color: rgba(40, 40, 40, 0.9);
     }
     
-    .countdown-timer {
-      margin-right: 10px;
+    .countdown-text {
+      color: #dddddd;
+    }
+    
+    .sos-details {
+      background-color: rgba(50, 50, 50, 0.7);
+    }
+    
+    .location-status,
+    .battery-status {
+      color: #dddddd;
     }
   }
