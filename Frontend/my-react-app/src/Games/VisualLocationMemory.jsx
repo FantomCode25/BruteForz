@@ -4,7 +4,8 @@ import axios from 'axios';
 import GameNav from './GameNav';
 import './VisualLocationMemory.css';
 
-function VisualLocationMemory({ patient }) {
+function VisualLocationMemory() {
+  const [user, setUser] = useState(null);
   const [gameState, setGameState] = useState('idle'); // idle, memorize, recall, complete
   const [grid, setGrid] = useState([]);
   const [correctLocations, setCorrectLocations] = useState([]);
@@ -13,17 +14,30 @@ function VisualLocationMemory({ patient }) {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(null);
-  const [timeToMemorize, setTimeToMemorize] = useState(5); // seconds to view objects
+  const [timeToMemorize, setTimeToMemorize] = useState(3); // Changed from 5 to 3 seconds
   const [saveError, setSaveError] = useState(null);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [remainingLives, setRemainingLives] = useState(3);
   
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
+  
   // When game state changes to complete, save the score
   useEffect(() => {
-    if (gameState === 'complete' && score > 0 && patient?._id) {
+    if (gameState === 'complete' && score > 0 && user?.user_id) {
       saveScore();
     }
-  }, [gameState, score, patient]);
+  }, [gameState, score, user]);
   
   useEffect(() => {
     let interval;
@@ -43,17 +57,17 @@ function VisualLocationMemory({ patient }) {
     setSaveError(null);
     setScoreSaved(false);
     
-    if (!patient?._id) {
-      setSaveError("No patient ID available");
+    if (!user?.user_id) {
+      setSaveError("No user ID available");
       return;
     }
     
     try {
       const scoreData = {
-        patient_id: patient._id,
+        patient_id: user.user_id,
         game_name: 'visual-location-memory',
         score: score,
-        patient_name: patient.name || 'Unknown Patient'
+        user_name: user.name || 'Unknown User'
       };
       
       console.log("Saving score:", scoreData);
@@ -81,7 +95,7 @@ function VisualLocationMemory({ patient }) {
     setSaveError(null);
     setScoreSaved(false);
     setGridSize(4); // Start with 4x4 grid
-    setTimeToMemorize(5); // Reset timer to 5 seconds
+    setTimeToMemorize(3); // Changed from 5 to 3 seconds for initial timer
     startNewRound();
   };
   
@@ -164,9 +178,9 @@ function VisualLocationMemory({ patient }) {
         setGridSize(prevSize => prevSize + 1);
       }
       
-      // Decrease memorization time as levels progress, but not below 3 seconds
+      // Decrease memorization time as levels progress, but not below 2 seconds
       if (level % 2 === 0) {
-        setTimeToMemorize(prevTime => Math.max(3, prevTime - 0.5));
+        setTimeToMemorize(prevTime => Math.max(2, prevTime - 0.5));
       }
       
       // Start new round with more complex pattern
@@ -191,7 +205,7 @@ function VisualLocationMemory({ patient }) {
   
   return (
     <div className="game-page">
-      <GameNav patients={[patient]} selectedPatient={patient} onPatientChange={() => {}} />
+      <GameNav user={user} />
       
       <div className="game-header">
         <Link to="/games" className="back-button">

@@ -1,101 +1,71 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import axios from 'axios';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-
-// Game components
+import Login from './Login';
+import Signup from './Signup';
 import SimonSays from './Games/SimonSays';
 import VisualLocationMemory from './Games/VisualLocationMemory';
 import WordScramble from './Games/WordScramble';
 import PictureMatch from './Games/PictureMatch';
 import GameHome from './Games/GameHome';
-
-// Main dashboard and other section components
 import Dashboard from './Dashboard/dashboard';
+import SosButton from './Sos/SosButton';
 
-// Placeholder components for unimplemented features
+// Placeholder components
 const Summary = () => <div className="placeholder-page"><h1>Summary Page</h1><p>This feature is coming soon!</p></div>;
 const Routine = () => <div className="placeholder-page"><h1>Routine & Medication</h1><p>This feature is coming soon!</p></div>;
-const SOS = () => <div className="placeholder-page"><h1>SOS Page</h1><p>This feature is coming soon!</p></div>;
 
 function App() {
-  const [patients, setPatients] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    fetchPatients();
-  }, []);
-
-  const fetchPatients = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/patients');
-      setPatients(response.data.patients);
-      
-      if (response.data.patients.length > 0) {
-        setSelectedPatient(response.data.patients[0]);
-      }
-      
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load patients data');
-      setLoading(false);
-      console.error('Error fetching patients:', err);
+    const token = localStorage.getItem('user');
+    if (token) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
     }
-  };
-
-  const handlePatientChange = (patientId) => {
-    const patient = patients.find(p => p._id === patientId);
-    setSelectedPatient(patient);
-  };
+  }, []);
 
   return (
     <div className="app">
       <Routes>
-        {/* Main Dashboard Route */}
+        {/* Auth Routes */}
         <Route path="/" element={
-          <Dashboard 
-            patients={patients} 
-            selectedPatient={selectedPatient}
-            loading={loading}
-          />
+          isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
         } />
-        
-        {/* Placeholder routes for unimplemented features */}
-        <Route path="/summary" element={<Summary />} />
-        <Route path="/routine" element={<Routine />} />
-        <Route path="/sos" element={<SOS />} />
-        
-        {/* Games Routes */}
+        <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+        <Route path="/signup" element={<Signup onSignup={() => setIsAuthenticated(true)} />} />
+
+        {/* Dashboard */}
+        <Route path="/dashboard" element={
+          isAuthenticated ? (
+            <Dashboard />
+          ) : (
+            <Navigate to="/login" />
+          )
+        } />
+
+        {/* Placeholder Routes */}
+        <Route path="/summary" element={isAuthenticated ? <Summary /> : <Navigate to="/login" />} />
+        <Route path="/routine" element={isAuthenticated ? <Routine /> : <Navigate to="/login" />} />
+        <Route path="/sos" element={isAuthenticated ? <SosButton /> : <Navigate to="/login" />} />
+
+        {/* Game Routes */}
         <Route path="/games" element={
-          <GameHome 
-            patients={patients} 
-            selectedPatient={selectedPatient}
-            onPatientChange={handlePatientChange}
-            loading={loading}
-          />
+          isAuthenticated ? <GameHome /> : <Navigate to="/login" />
         } />
         <Route path="/games/simon-says" element={
-          selectedPatient ? 
-            <SimonSays patient={selectedPatient} /> : 
-            <Navigate to="/games" replace />
+          isAuthenticated ? <SimonSays /> : <Navigate to="/login" />
         } />
         <Route path="/games/picture-match" element={
-          selectedPatient ? 
-            <PictureMatch patient={selectedPatient} /> : 
-            <Navigate to="/games" replace />
+          isAuthenticated ? <PictureMatch /> : <Navigate to="/login" />
         } />
         <Route path="/games/word-scramble" element={
-          selectedPatient ? 
-            <WordScramble patient={selectedPatient} /> : 
-            <Navigate to="/games" replace />
+          isAuthenticated ? <WordScramble /> : <Navigate to="/login" />
         } />
         <Route path="/games/visual-location" element={
-          selectedPatient ? 
-            <VisualLocationMemory patient={selectedPatient} /> : 
-            <Navigate to="/games" replace />
+          isAuthenticated ? <VisualLocationMemory /> : <Navigate to="/login" />
         } />
       </Routes>
     </div>

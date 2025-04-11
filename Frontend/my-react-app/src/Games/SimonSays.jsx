@@ -4,7 +4,8 @@ import axios from 'axios';
 import GameNav from './GameNav';
 import './SimonSays.css'
 
-function SimonSays({ patient }) {
+function SimonSays() {
+  const [user, setUser] = useState(null);
   const [gameState, setGameState] = useState('idle'); // idle, sequence, player, gameOver
   const [sequence, setSequence] = useState([]);
   const [playerSequence, setPlayerSequence] = useState([]);
@@ -15,29 +16,42 @@ function SimonSays({ patient }) {
   const colors = ['red', 'blue', 'green', 'yellow'];
   const colorRefs = useRef({});
   
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
+  
   // When gameState changes to gameOver, save the score
   useEffect(() => {
-    if (gameState === 'gameOver' && score > 0 && patient?._id) {
+    if (gameState === 'gameOver' && score > 0 && user?.user_id) {
       saveScore();
     }
-  }, [gameState, score, patient]);
+  }, [gameState, score, user]);
   
   const saveScore = async () => {
     // Reset state for new save attempt
     setSaveError(null);
     setScoreSaved(false);
     
-    if (!patient?._id) {
-      setSaveError("No patient ID available");
+    if (!user?.user_id) {
+      setSaveError("No user ID available");
       return;
     }
     
     try {
       const scoreData = {
-        patient_id: patient._id,
+        patient_id: user.user_id,
         game_name: 'simon-says',
         score: score,
-        patient_name: patient.name || 'Unknown Patient'
+        user_name: user.name || 'Unknown User'
       };
       
       console.log("Saving score:", scoreData);
@@ -131,7 +145,7 @@ function SimonSays({ patient }) {
   
   return (
     <div className="game-page">
-      <GameNav patients={[patient]} selectedPatient={patient} onPatientChange={() => {}} />
+      <GameNav user={user} />
       
       <div className="game-header">
         <Link to="/games" className="back-button">

@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import GameNav from './GameNav';
 
 import './PictureMatch.css';
 
-// Icons as emoji for simplicity - reduced to 5 pairs
-
+// Icons as emoji for simplicity
 const icons = [
   '🍎', '🚗', '🌈', '🐶', '🌮', '🦋'
-]
-// const icons = [
-//   '🍎', '🚗', '🌈'
-// ];
+];
 
 // Score messages based on time taken (lower time is better)
 const getScoreMessage = (time) => {
@@ -28,7 +24,8 @@ const getScoreMessage = (time) => {
   return "Thanks for playing! Try again to improve your score! 🎮";
 };
 
-function PictureMatch({ patient }) {
+function PictureMatch() {
+  const [user, setUser] = useState(null);
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
@@ -39,6 +36,19 @@ function PictureMatch({ patient }) {
   const [scoreMessage, setScoreMessage] = useState('');
   const [saveError, setSaveError] = useState(null);
   const [scoreSaved, setScoreSaved] = useState(false);
+  
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
   
   useEffect(() => {
     let interval;
@@ -52,27 +62,27 @@ function PictureMatch({ patient }) {
   
   // When gameState changes to complete, save the score
   useEffect(() => {
-    if (gameState === 'complete' && score > 0 && patient?._id) {
+    if (gameState === 'complete' && score > 0 && user?.user_id) {
       saveScore();
     }
-  }, [gameState, score, patient]);
+  }, [gameState, score, user]);
   
   const saveScore = async () => {
     // Reset state for new save attempt
     setSaveError(null);
     setScoreSaved(false);
     
-    if (!patient?._id) {
-      setSaveError("No patient ID available");
+    if (!user?.user_id) {
+      setSaveError("No user ID available");
       return;
     }
     
     try {
       const scoreData = {
-        patient_id: patient._id,
+        patient_id: user.user_id,
         game_name: 'picture-match',
         score: score,
-        patient_name: patient.name || 'Unknown Patient'
+        user_name: user.name || 'Unknown User'
       };
       
       console.log("Saving score:", scoreData);
@@ -96,7 +106,7 @@ function PictureMatch({ patient }) {
   };
   
   const startGame = () => {
-    // Create a shuffled deck of cards with 5 pairs
+    // Create a shuffled deck of cards with pairs
     const shuffledCards = [...icons, ...icons]
       .sort(() => Math.random() - 0.5)
       .map((icon, index) => ({ id: index, icon, flipped: false, matched: false }));
@@ -164,7 +174,7 @@ function PictureMatch({ patient }) {
   
   return (
     <div className="game-page">
-      <GameNav patients={[patient]} selectedPatient={patient} onPatientChange={() => {}} />
+      <GameNav user={user} />
       
       <div className="game-header">
         <Link to="/games" className="back-button">

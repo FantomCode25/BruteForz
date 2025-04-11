@@ -1,0 +1,275 @@
+.sos-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 10px;
+  }
+  
+  .sos-container.expanded {
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sos-button {
+    background-color: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(255, 59, 48, 0.4);
+    transition: all 0.2s ease;
+  }
+  
+  .sos-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(255, 59, 48, 0.5);
+  }
+  
+  .sos-button:active {
+    transform: scale(0.95);
+  }
+  
+  .sos-button.sending {
+    opacity: 0.7;
+    cursor: not-allowed;
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .status-message {
+    margin-top: 16px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+  }
+  
+  .status-message.success {
+    background-color: #4cd964;
+    color: white;
+  }
+  
+  .status-message.error {
+    background-color: #ff3b30;
+    color: white;
+  }
+  
+  .status-message.info {
+    background-color: #007aff;
+    color: white;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .sos-details {
+    margin-top: 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .location-status,
+  .battery-status {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .location-status .available {
+    color: #4cd964;
+  }
+  
+  .location-status .unavailable {
+    color: #ff3b30;
+  }
+  
+  .countdown-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+  }
+  
+  .countdown-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .countdown-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff3b30;
+  }
+  
+  .countdown-text {
+    font-size: 16px;
+    margin-top: 8px;
+    color: #333;
+    text-align: center;
+  }
+  
+  .cancel-button {
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .cancel-button:hover {
+    background-color: #555;
+  }
+  
+  /* Mobile Responsive Styles */
+  @media (max-width: 767px) {
+    .sos-container {
+      max-width: 100%;
+      padding: 10px 5px;
+    }
+    
+    .sos-button {
+      width: 80px;
+      height: 80px;
+      font-size: 20px;
+    }
+    
+    .countdown-number {
+      font-size: 36px;
+    }
+    
+    .countdown-text {
+      font-size: 14px;
+    }
+    
+    .status-message {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+    
+    .sos-details {
+      font-size: 12px;
+    }
+    
+    .cancel-button {
+      padding: 6px 18px;
+      font-size: 14px;
+    }
+  }
+  
+  /* Small smartphones */
+  @media (max-width: 375px) {
+    .sos-button {
+      width: 70px;
+      height: 70px;
+      font-size: 18px;
+    }
+    
+    .countdown-number {
+      font-size: 32px;
+    }
+    
+    .countdown-text {
+      font-size: 12px;
+    }
+  }
+  
+  /* Touch device optimizations */
+  @media (hover: none) {
+    .sos-button:hover {
+      transform: none;
+      box-shadow: 0 4px 8px rgba(255, 59, 48, 0.4);
+    }
+    
+    .cancel-button:hover {
+      background-color: #333;
+    }
+    
+    /* Make buttons larger on touch devices for easier tapping */
+    .cancel-button {
+      padding: 12px 24px;
+      min-height: 44px; /* Apple's recommendation for touch targets */
+    }
+  }
+  
+  /* Fix for iOS Safari specific issues */
+  @supports (-webkit-touch-callout: none) {
+    .sos-button, 
+    .cancel-button {
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+  
+  /* Landscape orientation on mobile */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .sos-container {
+      flex-direction: row;
+      max-width: 100%;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .sos-container.expanded {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .sos-button {
+      width: 60px;
+      height: 60px;
+      font-size: 16px;
+    }
+    
+    .countdown-container {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .countdown-timer {
+      margin-right: 10px;
+    }
+  }

@@ -1,13 +1,9 @@
 import { Link } from 'react-router-dom';
 
-function GameNav({ patients, selectedPatient, onPatientChange }) {
-  const handleChange = (e) => {
-    onPatientChange(e.target.value);
-  };
-
+function GameNav({ user }) {
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand">
+      <Link to="/dashboard" className="navbar-brand">
         {"<"}
       </Link>
       <Link to="/games" className="navbar-brand">
@@ -15,17 +11,9 @@ function GameNav({ patients, selectedPatient, onPatientChange }) {
       </Link>
       
       <div className="patient-selector">
-        <select 
-          className="patient-select"
-          value={selectedPatient?._id || ''}
-          onChange={handleChange}
-        >
-          {patients.map(patient => (
-            <option key={patient._id} value={patient._id}>
-              {patient.name || 'Unknown Patient'}
-            </option>
-          ))}
-        </select>
+        <div className="user-info">
+          <span className="user-name">{user?.name || 'Unknown User'}</span>
+        </div>
       </div>
     </nav>
   );

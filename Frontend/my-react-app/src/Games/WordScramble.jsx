@@ -13,7 +13,8 @@ const wordBank = [
   "music", "paper", "light", "plate", "sunny"
 ];
 
-function WordScramble({ patient }) {
+function WordScramble() {
+  const [user, setUser] = useState(null);
   const [gameState, setGameState] = useState('idle'); // idle, playing, complete
   const [currentWord, setCurrentWord] = useState('');
   const [scrambledWord, setScrambledWord] = useState('');
@@ -24,6 +25,19 @@ function WordScramble({ patient }) {
   const [usedWords, setUsedWords] = useState([]);
   const [saveError, setSaveError] = useState(null);
   const [scoreSaved, setScoreSaved] = useState(false);
+  
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
   
   useEffect(() => {
     let interval;
@@ -38,27 +52,27 @@ function WordScramble({ patient }) {
   }, [gameState, timer]);
   
   useEffect(() => {
-    if (gameState === 'complete' && score > 0 && patient?._id) {
+    if (gameState === 'complete' && score > 0 && user?.user_id) {
       saveScore();
     }
-  }, [gameState, score, patient]);
+  }, [gameState, score, user]);
   
   const saveScore = async () => {
     // Reset state for new save attempt
     setSaveError(null);
     setScoreSaved(false);
     
-    if (!patient?._id) {
-      setSaveError("No patient ID available");
+    if (!user?.user_id) {
+      setSaveError("No user ID available");
       return;
     }
     
     try {
       const scoreData = {
-        patient_id: patient._id,
+        patient_id: user.user_id,
         game_name: 'word-scramble',
         score: score,
-        patient_name: patient.name || 'Unknown Patient'
+        user_name: user.name || 'Unknown User'
       };
       
       console.log("Saving score:", scoreData);
@@ -164,7 +178,7 @@ function WordScramble({ patient }) {
   
   return (
     <div className="game-page">
-      <GameNav patients={[patient]} selectedPatient={patient} onPatientChange={() => {}} />
+      <GameNav user={user} />
       
       <div className="game-header">
         <Link to="/games" className="back-button">
