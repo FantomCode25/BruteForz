@@ -8,6 +8,7 @@ function Contacts() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showConversationModal, setShowConversationModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [user, setUser] = useState(null);
@@ -23,6 +24,14 @@ function Contacts() {
     isEmergency: false,
     photo_url: "",
     conversation_data: defaultConversationData // Initialize with default conversation data
+  });
+  const [editContact, setEditContact] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    isEmergency: false,
+    photo_url: "",
+    conversation_data: []
   });
   const [error, setError] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -76,10 +85,13 @@ function Contacts() {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e, isEdit = false) => {
     const { name, value, type, checked } = e.target;
-    setNewContact({ 
-      ...newContact, 
+    const contactToUpdate = isEdit ? editContact : newContact;
+    const setContactFunction = isEdit ? setEditContact : setNewContact;
+    
+    setContactFunction({ 
+      ...contactToUpdate, 
       [name]: type === 'checkbox' ? checked : value 
     });
   };
@@ -117,18 +129,27 @@ function Contacts() {
     }
   };
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = async (e, isEdit = false) => {
     const file = e.target.files[0];
     if (!file) return;
 
     try {
       // Create temporary object URL for preview
       const previewUrl = URL.createObjectURL(file);
-      setNewContact({ 
-        ...newContact, 
-        photo_url: previewUrl, // Temporary URL for preview only
-        file: file // Store the file object for later upload
-      });
+      
+      if (isEdit) {
+        setEditContact({ 
+          ...editContact, 
+          photo_url: previewUrl, // Temporary URL for preview only
+          file: file // Store the file object for later upload
+        });
+      } else {
+        setNewContact({ 
+          ...newContact, 
+          photo_url: previewUrl, // Temporary URL for preview only
+          file: file // Store the file object for later upload
+        });
+      }
     } catch (err) {
       console.error("Error creating preview:", err);
       setError("Error creating image preview");
@@ -209,6 +230,66 @@ function Contacts() {
     }
   };
 
+  const handleEditContact = async (e) => {
+    e.preventDefault();
+    
+    // Validate input
+    if (!editContact.name) {
+      setError("Contact name is required");
+      return;
+    }
+
+    // Basic email validation
+    if (editContact.email && !validateEmail(editContact.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Create a copy of the contact data to update
+      const contactData = { ...editContact };
+      
+      // Upload the new image if provided
+      if (editContact.file) {
+        const imageUrl = await uploadImageToBackend(editContact.file);
+        contactData.photo_url = imageUrl;
+      }
+      
+      // Remove file property before sending to backend
+      delete contactData.file;
+      
+      const response = await fetch(`http://localhost:5000/api/contacts/${editContact._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      // Check if response is ok before parsing JSON
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        fetchContacts();
+        setShowEditModal(false);
+        setError(""); // Clear any previous errors
+      } else {
+        setError(data.error || "Failed to update contact");
+      }
+    } catch (err) {
+      setError("An error occurred while updating the contact: " + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
@@ -243,6 +324,15 @@ function Contacts() {
   const handleViewConversation = (contact) => {
     setSelectedContact(contact);
     setShowConversationModal(true);
+  };
+  
+  const handleEditButtonClick = (contact) => {
+    // Make a deep copy of the contact to avoid modifying the original
+    setEditContact({
+      ...contact,
+      // Don't include file property as we don't have the file object, only the URL
+    });
+    setShowEditModal(true);
   };
 
   const formatTimestamp = (timestamp) => {
@@ -304,6 +394,13 @@ function Contacts() {
                   </div>
                   <div className="contact-actions">
                     <button 
+                      className="edit-btn"
+                      onClick={() => handleEditButtonClick(contact)}
+                      title="Edit Contact"
+                    >
+                      <i className="edit-icon">✏️</i>
+                    </button>
+                    <button 
                       className="view-conversation-btn"
                       onClick={() => handleViewConversation(contact)}
                       title="View Conversation"
@@ -347,7 +444,7 @@ function Contacts() {
                   id="name"
                   name="name"
                   value={newContact.name}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange(e, false)}
                   placeholder="Contact Name"
                   required
                 />
@@ -360,7 +457,7 @@ function Contacts() {
                   id="email"
                   name="email"
                   value={newContact.email}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange(e, false)}
                   placeholder="Email Address"
                 />
               </div>
@@ -372,7 +469,7 @@ function Contacts() {
                   id="phone"
                   name="phone"
                   value={newContact.phone}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange(e, false)}
                   placeholder="Phone Number"
                 />
               </div>
@@ -383,7 +480,7 @@ function Contacts() {
                   id="isEmergency"
                   name="isEmergency"
                   checked={newContact.isEmergency}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange(e, false)}
                 />
                 <label htmlFor="isEmergency">Emergency Contact</label>
               </div>
@@ -394,7 +491,7 @@ function Contacts() {
                   type="file"
                   id="photo"
                   name="photo"
-                  onChange={handleFileChange}
+                  onChange={(e) => handleFileChange(e, false)}
                   accept="image/*"
                 />
                 {newContact.photo_url && (
@@ -418,6 +515,107 @@ function Contacts() {
                   disabled={uploadingImage || loading}
                 >
                   {uploadingImage ? "Uploading..." : "Add Contact"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contact Modal */}
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h2>Edit Contact</h2>
+              <button 
+                className="close-btn"
+                onClick={() => setShowEditModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditContact}>
+              <div className="form-group">
+                <label htmlFor="edit-name">Name *</label>
+                <input
+                  type="text"
+                  id="edit-name"
+                  name="name"
+                  value={editContact.name}
+                  onChange={(e) => handleInputChange(e, true)}
+                  placeholder="Contact Name"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-email">Email</label>
+                <input
+                  type="email"
+                  id="edit-email"
+                  name="email"
+                  value={editContact.email}
+                  onChange={(e) => handleInputChange(e, true)}
+                  placeholder="Email Address"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="edit-phone"
+                  name="phone"
+                  value={editContact.phone}
+                  onChange={(e) => handleInputChange(e, true)}
+                  placeholder="Phone Number"
+                />
+              </div>
+              
+              <div className="form-group checkbox-group">
+                <input
+                  type="checkbox"
+                  id="edit-isEmergency"
+                  name="isEmergency"
+                  checked={editContact.isEmergency}
+                  onChange={(e) => handleInputChange(e, true)}
+                />
+                <label htmlFor="edit-isEmergency">Emergency Contact</label>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="edit-photo">Photo</label>
+                <input
+                  type="file"
+                  id="edit-photo"
+                  name="photo"
+                  onChange={(e) => handleFileChange(e, true)}
+                  accept="image/*"
+                />
+                {editContact.photo_url && (
+                  <div className="preview-photo">
+                    <img src={editContact.photo_url} alt="Preview" />
+                  </div>
+                )}
+                <small className="photo-note">Leave empty to keep current photo</small>
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  onClick={() => setShowEditModal(false)}
+                  disabled={uploadingImage}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="primary-btn"
+                  disabled={uploadingImage || loading}
+                >
+                  {uploadingImage ? "Uploading..." : "Save Changes"}
                 </button>
               </div>
             </form>

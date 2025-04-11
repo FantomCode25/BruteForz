@@ -5,7 +5,7 @@ import os
 import json
 import traceback
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 import base64
 import requests
@@ -220,8 +220,6 @@ def get_contacts(user_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 # Route to add a new contact
-# Only the modified or new routes are shown here
-
 @app.route('/api/contacts', methods=['POST'])
 def add_contact():
     try:
@@ -248,6 +246,12 @@ def add_contact():
             contact_data['isEmergency'] = False
         if 'photo_url' not in contact_data:
             contact_data['photo_url'] = ""
+        if 'conversation_data' not in contact_data:
+            # Default conversation data
+            contact_data['conversation_data'] = [
+                {"text": "Hello", "timestamp": datetime.utcnow().isoformat()},
+                {"text": "hi", "timestamp": (datetime.utcnow() + timedelta(seconds=15)).isoformat()}
+            ]
         
         # Insert contact
         result = contacts_collection.insert_one(contact_data)
