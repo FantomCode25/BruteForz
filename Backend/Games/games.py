@@ -219,6 +219,30 @@ def get_contacts(user_id):
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+# Helper function to notify external service about new contact
+# Helper function to notify external service about new contact
+def notify_external_service(name, photo_url):
+    try:
+        # Send POST request to the external endpoint with form data, not JSON
+        response = requests.post(
+            "https://lbq629b2-5000.inc1.devtunnels.ms/add",
+            data={  # Changed from json to data to send as form data
+                "username": name,
+                "photo_url": photo_url
+            }
+        )
+        
+        if response.status_code != 200:
+            print(f"External service notification failed: {response.status_code}, {response.text}")
+            return False
+        
+        print(f"External service notification succeeded: {response.text}")
+        return True
+    except Exception as e:
+        print(f"Error notifying external service: {str(e)}")
+        traceback.print_exc()
+        return False
+        
 # Route to add a new contact
 @app.route('/api/contacts', methods=['POST'])
 def add_contact():
@@ -256,10 +280,17 @@ def add_contact():
         # Insert contact
         result = contacts_collection.insert_one(contact_data)
         
+        # After successfully adding the contact to database, notify external service
+        notification_result = notify_external_service(
+            name=contact_data['name'],
+            photo_url=contact_data['photo_url']
+        )
+        
         return jsonify({
             "success": True, 
             "message": "Contact added successfully",
-            "contact_id": str(result.inserted_id)
+            "contact_id": str(result.inserted_id),
+            "external_notification": "succeeded" if notification_result else "failed"
         })
     except Exception as e:
         print(f"Error in add_contact: {str(e)}")

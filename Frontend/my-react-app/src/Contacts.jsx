@@ -35,6 +35,7 @@ function Contacts() {
   });
   const [error, setError] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [externalNotificationStatus, setExternalNotificationStatus] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -173,6 +174,7 @@ function Contacts() {
 
     try {
       setLoading(true);
+      setExternalNotificationStatus(null);
       
       // Upload the image if provided
       let imageUrl = "";
@@ -219,6 +221,16 @@ function Contacts() {
           conversation_data: defaultConversationData // Reset with default conversation data
         });
         setError(""); // Clear any previous errors
+        
+        // Handle external notification status
+        if (data.external_notification) {
+          setExternalNotificationStatus(data.external_notification);
+          
+          // Show status for a few seconds then clear it
+          setTimeout(() => {
+            setExternalNotificationStatus(null);
+          }, 5000);
+        }
       } else {
         setError(data.error || "Failed to add contact");
       }
@@ -357,6 +369,12 @@ function Contacts() {
         <h1>My Contacts</h1>
         
         {error && <div className="error-message">{error}</div>}
+        
+        {externalNotificationStatus && (
+          <div className={`notification-message ${externalNotificationStatus === 'succeeded' ? 'success' : 'warning'}`}>
+            External notification {externalNotificationStatus}
+          </div>
+        )}
         
         <button 
           className="add-contact-btn" 
