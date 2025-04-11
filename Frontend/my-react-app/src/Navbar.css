@@ -1,12 +1,12 @@
-/* Navbar styling with centered title and improved aesthetics */
+/* Enhanced Navbar styling with larger elements and improved aesthetics */
 .echomind-navbar {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     color: white;
-    padding: 1rem;
+    padding: 1.5rem 2rem;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -15,31 +15,32 @@
   .app-brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     justify-self: center;
     grid-column: 2;
   }
   
   .app-logo {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   }
   
   .app-brand h1 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     background: linear-gradient(to right, #ffffff, #ffe0d0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   }
   
   .navbar-right {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
     justify-self: end;
     grid-column: 3;
   }
@@ -47,48 +48,89 @@
   .user-greeting {
     font-weight: 500;
     white-space: nowrap;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
   
   .logout-button {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
-    padding: 10px 18px;
+    padding: 12px 24px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
   }
   
   .logout-button:hover {
     background-color: var(--accent-color);
     border-color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   }
   
-  /* Root variables for consistent styling */
-  :root {
-    --primary-color: #ff7e5f;
-    --primary-light: #ffaf7b;
-    --accent-color: #e66767;
-    --sos-color: #e63946;
-    --text-color: #4a4a4a;
-    --light-bg: #fff9f5;
-    --card-bg: #ffffff;
-    --border-radius: 12px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .back-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 48px;
+    height: 48px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .back-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(-3px);
+  }
+  
+  .back-icon {
+    margin-right: 0;
+    font-weight: bold;
   }
   
   /* RESPONSIVE DESIGN */
+  @media (max-width: 992px) {
+    .echomind-navbar {
+      padding: 1.2rem 1.5rem;
+    }
+    
+    .app-logo {
+      font-size: 2.2rem;
+    }
+    
+    .app-brand h1 {
+      font-size: 2rem;
+    }
+    
+    .logout-button {
+      padding: 10px 20px;
+    }
+    
+    .user-greeting {
+      font-size: 1.2rem;
+    }
+  }
+  
   @media (max-width: 768px) {
     .echomind-navbar {
       grid-template-columns: 1fr;
       grid-template-rows: auto auto;
-      padding: 0.75rem;
-      gap: 12px;
+      padding: 1rem 1.2rem;
+      gap: 16px;
     }
     
     .app-brand {
@@ -101,6 +143,43 @@
       grid-row: 2;
       width: 100%;
       justify-content: center;
-      gap: 20px;
+      gap: 24px;
+    }
+    
+    .app-logo {
+      font-size: 2rem;
+    }
+    
+    .app-brand h1 {
+      font-size: 1.8rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .navbar-right {
+      gap: 16px;
+    }
+    
+    .user-greeting {
+      font-size: 1.1rem;
+    }
+    
+    .logout-button {
+      padding: 8px 16px;
+      font-size: 1rem;
+    }
+    
+    .app-logo {
+      font-size: 1.8rem;
+    }
+    
+    .app-brand h1 {
+      font-size: 1.6rem;
+    }
+    
+    .back-button {
+      width: 40px;
+      height: 40px;
+      font-size: 1.3rem;
     }
   }

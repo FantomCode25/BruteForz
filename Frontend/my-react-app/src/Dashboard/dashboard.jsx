@@ -9,7 +9,6 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
 
   const userData = JSON.parse(localStorage.getItem('user'));
 
-
   const [isRecording, setIsRecording] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -29,49 +28,66 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
     setMenuOpen(false); // Close menu after navigating
   };
 
+  const handleSOS = () => {
+    navigate("/sos");
+  };
+
   return (
     <div className="dashboard-container">
       <Navbar user={user} />
 
-      {/* User Greeting */}
+      {/* User Greeting with SOS Button */}
       <div className="user-profile-card">
-        <h2>Hello, {userData?.name || "User"}!</h2>
-        <p>
-          Today is{" "}
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+        <div className="user-greeting">
+          <h2>Hello, {userData?.name || "User"}!</h2>
+          <p>
+            Today is{" "}
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </div>
+        <button className="sos-card-button" onClick={handleSOS}>
+          <i className="icon sos-icon"></i>
+          <span>SOS</span>
+        </button>
       </div>
 
-      {/* Navigation Tiles */}
-      <div className={`dashboard-buttons ${menuOpen ? "open" : ""}`}>
-        <button className={isActive("/summary")} onClick={() => handleNavigation("/summary")}>
+      {/* Navigation Tiles - Now in 2 columns */}
+      <div className="dashboard-tiles">
+        <button 
+          className={`dashboard-tile ${isActive("/summary")}`} 
+          onClick={() => handleNavigation("/summary")}
+        >
           <i className="icon summary-icon"></i>
           <span>Summary</span>
         </button>
 
-        <button className={isActive("/games")} onClick={() => handleNavigation("/games")}>
+        <button 
+          className={`dashboard-tile ${isActive("/games")}`} 
+          onClick={() => handleNavigation("/games")}
+        >
           <i className="icon games-icon"></i>
           <span>Games</span>
         </button>
 
-        <button className={isActive("/routine")} onClick={() => handleNavigation("/routine")}>
+        <button 
+          className={`dashboard-tile ${isActive("/routine")}`} 
+          onClick={() => handleNavigation("/routine")}
+        >
           <i className="icon routine-icon"></i>
           <span>Routine & Medication</span>
         </button>
 
-        <button className={isActive("/contacts")} onClick={() => handleNavigation("/contacts")}>
+        <button 
+          className={`dashboard-tile ${isActive("/contacts")}`} 
+          onClick={() => handleNavigation("/contacts")}
+        >
           <i className="icon contacts-icon"></i>
           <span>Contacts</span>
-        </button>
-
-        <button className={`sos-button ${isActive("/sos")}`} onClick={() => handleNavigation("/sos")}>
-          <i className="icon sos-icon"></i>
-          <span>SOS</span>
         </button>
       </div>
 
