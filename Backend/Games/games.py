@@ -6,7 +6,10 @@ import json
 import traceback
 from bson import ObjectId
 from datetime import datetime
-
+from uuid import uuid4
+import base64
+import requests
+from werkzeug.utils import secure_filename
 
 # Custom JSON encoder to handle ObjectId
 class MongoJSONEncoder(json.JSONEncoder):
@@ -22,6 +25,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 app.json_encoder = MongoJSONEncoder
 
+# Set ImgBB API key
+os.environ["IMGBB_API_KEY"] = "ae2817b2ebddd8b0160555cc377b8ff9"
+
 # Connect to MongoDB
 mongo_uri = "mongodb+srv://bossutkarsh30:YOCczedaElKny6Dd@cluster0.gixba.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 try:
@@ -32,9 +38,60 @@ try:
     db = client["alzheimers_db"]
     patients_collection = db["patient"]
     games_collection = db["games"]
+    contacts_collection = db["contacts"]
 except Exception as e:
     print(f"MongoDB connection error: {str(e)}")
     traceback.print_exc()
+
+# New route to handle image uploads
+@app.route('/api/upload-image', methods=['POST'])
+def upload_image():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"success": False, "error": "No image file provided"}), 400
+            
+        file = request.files['image']
+        
+        if file.filename == '':
+            return jsonify({"success": False, "error": "No selected file"}), 400
+            
+        if file:
+            # Read the file data
+            file_data = file.read()
+            # Convert to base64
+            img_base64 = base64.b64encode(file_data).decode('utf-8')
+            
+            # Get API key from environment variable
+            imgbb_api_key = os.getenv("IMGBB_API_KEY")
+            if not imgbb_api_key:
+                return jsonify({"success": False, "error": "ImgBB API key not configured"}), 500
+                
+            # Upload to ImgBB
+            response = requests.post(
+                "https://api.imgbb.com/1/upload",
+                data={
+                    "key": imgbb_api_key,
+                    "image": img_base64,
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"success": False, "error": f"ImgBB API error: {response.status_code}"}), 500
+                
+            # Get the URL from the response
+            result = response.json()
+            if result.get('success'):
+                return jsonify({
+                    "success": True,
+                    "imageUrl": result.get('data', {}).get('url')
+                })
+            else:
+                return jsonify({"success": False, "error": "ImgBB upload failed"}), 500
+                
+    except Exception as e:
+        print(f"Error in upload_image: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # Route to get all patients
 @app.route('/api/patients', methods=['GET'])
@@ -149,6 +206,107 @@ def get_game_scores(patient_id):
         return jsonify({"success": True, "games": scores})
     except Exception as e:
         print(f"Error in get_game_scores: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route('/api/contacts/<user_id>', methods=['GET'])
+def get_contacts(user_id):
+    try:
+        contacts = list(contacts_collection.find({"user_id": user_id}))
+        return jsonify({"success": True, "contacts": contacts})
+    except Exception as e:
+        print(f"Error in get_contacts: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# Route to add a new contact
+# Only the modified or new routes are shown here
+
+@app.route('/api/contacts', methods=['POST'])
+def add_contact():
+    try:
+        contact_data = request.json
+        
+        # Check for required fields - name and user_id are required
+        required_fields = ['name', 'user_id']
+        
+        for field in required_fields:
+            if field not in contact_data:
+                return jsonify({"success": False, "error": f"Missing required field: {field}"}), 400
+        
+        # Add timestamp and generate ID if not provided
+        contact_data['timestamp'] = datetime.utcnow()
+        if '_id' not in contact_data:
+            contact_data['_id'] = str(uuid4())
+        
+        # Ensure optional fields exist even if empty
+        if 'email' not in contact_data:
+            contact_data['email'] = ""
+        if 'phone' not in contact_data:
+            contact_data['phone'] = ""
+        if 'isEmergency' not in contact_data:
+            contact_data['isEmergency'] = False
+        if 'photo_url' not in contact_data:
+            contact_data['photo_url'] = ""
+        
+        # Insert contact
+        result = contacts_collection.insert_one(contact_data)
+        
+        return jsonify({
+            "success": True, 
+            "message": "Contact added successfully",
+            "contact_id": str(result.inserted_id)
+        })
+    except Exception as e:
+        print(f"Error in add_contact: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# Route to delete a contact
+@app.route('/api/contacts/<contact_id>', methods=['DELETE'])
+def delete_contact(contact_id):
+    try:
+        # First try to delete contact using the ID directly (for UUID)
+        result = contacts_collection.delete_one({"_id": contact_id})
+        
+        # If not found and ID looks like an ObjectId, try with ObjectId
+        if result.deleted_count == 0 and len(contact_id) == 24 and all(c in '0123456789abcdefABCDEF' for c in contact_id):
+            result = contacts_collection.delete_one({"_id": ObjectId(contact_id)})
+            
+        if result.deleted_count == 0:
+            return jsonify({"success": False, "error": "Contact not found"}), 404
+            
+        return jsonify({"success": True, "message": "Contact deleted successfully"})
+    except Exception as e:
+        print(f"Error in delete_contact: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# Route to update a contact
+@app.route('/api/contacts/<contact_id>', methods=['PUT'])
+def update_contact(contact_id):
+    try:
+        contact_data = request.json
+        
+        # First try to update contact using the ID directly (for UUID)
+        result = contacts_collection.update_one(
+            {"_id": contact_id},
+            {"$set": contact_data}
+        )
+        
+        # If not found and ID looks like an ObjectId, try with ObjectId
+        if result.matched_count == 0 and len(contact_id) == 24 and all(c in '0123456789abcdefABCDEF' for c in contact_id):
+            result = contacts_collection.update_one(
+                {"_id": ObjectId(contact_id)},
+                {"$set": contact_data}
+            )
+            
+        if result.matched_count == 0:
+            return jsonify({"success": False, "error": "Contact not found"}), 404
+            
+        return jsonify({"success": True, "message": "Contact updated successfully"})
+    except Exception as e:
+        print(f"Error in update_contact: {str(e)}")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 

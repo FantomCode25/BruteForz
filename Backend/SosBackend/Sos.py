@@ -17,14 +17,16 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Enable CORS for frontend
+from flask_cors import CORS
+
 CORS(app, supports_credentials=True, resources={
     r"/api/*": {
-        "origins": "http://localhost:5173",
+        "origins": ["http://localhost:5173", "http://localhost:5174"],
         "methods": ["GET", "POST", "PUT", "DELETE"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
 
 # MongoDB setup
 mongo_uri = os.getenv("MONGO_URI") or "mongodb+srv://bossutkarsh30:YOCczedaElKny6Dd@cluster0.gixba.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"

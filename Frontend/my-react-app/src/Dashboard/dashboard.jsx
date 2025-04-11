@@ -27,44 +27,50 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
 
   return (
     <>
-          <Navbar user={user} />
-    <div className="dashboard">
-      {/* 🔥 Top Navigation Bar */}
+      <Navbar user={user} />
+      <div className="dashboard">
+        <div className={`dashboard-buttons ${menuOpen ? "open" : ""}`}>
+          <button
+            className={isActive("/summary")}
+            onClick={() => handleNavigation("/summary")}
+          >
+            <i className="icon summary-icon"></i>
+            <span>Summary</span>
+          </button>
 
-      <div className={`dashboard-buttons ${menuOpen ? "open" : ""}`}>
-        <button
-          className={isActive("/summary")}
-          onClick={() => handleNavigation("/summary")}
-        >
-          <i className="icon summary-icon"></i>
-          <span>Summary</span>
-        </button>
+          <button
+            className={isActive("/games")}
+            onClick={() => handleNavigation("/games")}
+          >
+            <i className="icon games-icon"></i>
+            <span>Games</span>
+          </button>
 
-        <button
-          className={isActive("/games")}
-          onClick={() => handleNavigation("/games")}
-        >
-          <i className="icon games-icon"></i>
-          <span>Games</span>
-        </button>
+          <button
+            className={isActive("/routine")}
+            onClick={() => handleNavigation("/routine")}
+          >
+            <i className="icon routine-icon"></i>
+            <span>Routine & Medication</span>
+          </button>
 
-        <button
-          className={isActive("/routine")}
-          onClick={() => handleNavigation("/routine")}
-        >
-          <i className="icon routine-icon"></i>
-          <span>Routine & Medication</span>
-        </button>
+          <button
+            className={isActive("/contacts")}
+            onClick={() => handleNavigation("/contacts")}
+          >
+            <i className="icon contacts-icon"></i>
+            <span>Contacts</span>
+          </button>
 
-        <button
-          className={`sos-button ${isSosActive()}`}
-          onClick={() => handleNavigation("/sos")}
-        >
-          <i className="icon sos-icon"></i>
-          <span>SOS</span>
-        </button>
+          <button
+            className={`sos-button ${isSosActive()}`}
+            onClick={() => handleNavigation("/sos")}
+          >
+            <i className="icon sos-icon"></i>
+            <span>SOS</span>
+          </button>
+        </div>
       </div>
-    </div>
     </>
   );
 }
