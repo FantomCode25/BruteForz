@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
 
@@ -10,6 +10,16 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [brainAnimated, setBrainAnimated] = useState(false);
+
+  useEffect(() => {
+    // Trigger brain animation after a short delay
+    const timer = setTimeout(() => {
+      setBrainAnimated(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,6 +71,14 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-form-wrapper">
+        <div className="branding">
+          <div className="logo-container">
+            <div className="brain-logo">🧠</div>
+            <div className="brain-glow"></div>
+          </div>
+          <h1 className="app-title">EchoMind</h1>
+        </div>
+        
         <h2>Login to Your Account</h2>
         
         {error && <div className="error-message">{error}</div>}
@@ -104,6 +122,8 @@ const Login = () => {
         <div className="login-footer">
           <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
         </div>
+        
+        <div className="wave"></div>
       </div>
     </div>
   );

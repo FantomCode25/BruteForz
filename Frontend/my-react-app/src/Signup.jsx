@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Signup.css';
 
@@ -15,6 +15,16 @@ const Signup = ({ onSignup }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [brainAnimated, setBrainAnimated] = useState(false);
+
+  useEffect(() => {
+    // Trigger brain animation after a short delay
+    const timer = setTimeout(() => {
+      setBrainAnimated(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,6 +101,14 @@ const Signup = ({ onSignup }) => {
   return (
     <div className="signup-container">
       <div className="signup-form-wrapper">
+        <div className="branding">
+          <div className="logo-container">
+            <div className="brain-logo">🧠</div>
+            <div className="brain-glow"></div>
+          </div>
+          <h1 className="app-title">EchoMind</h1>
+        </div>
+        
         <h2>Create Your Account</h2>
 
         {error && <div className="error-message">{error}</div>}
@@ -122,31 +140,33 @@ const Signup = ({ onSignup }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter your phone number"
-              required
-            />
-          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="age">Age</label>
-            <input
-              type="number"
-              id="age"
-              name="age"
-              value={formData.age}
-              onChange={handleChange}
-              placeholder="Enter your age"
-              min="1"
-              required
-            />
+            <div className="form-group">
+              <label htmlFor="age">Age</label>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                placeholder="Enter your age"
+                min="1"
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -183,6 +203,8 @@ const Signup = ({ onSignup }) => {
         <div className="signup-footer">
           <p>Already have an account? <Link to="/login">Log in</Link></p>
         </div>
+        
+        <div className="wave"></div>
       </div>
     </div>
   );
