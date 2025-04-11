@@ -1,65 +1,64 @@
 .navbar {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
-    background-color: #222;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    background-color:rgb(249, 88, 114);
+    color: white;
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
-  .navbar-left a {
-    margin-right: 15px;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  
-  .navbar-left a:hover {
-    text-decoration: underline;
-  }
-  
-  .navbar-title {
-    font-weight: bold;
-    margin-right: 20px;
-    color: #00d8ff;
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 600;
+    white-space: nowrap;
   }
   
   .navbar-right {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 8px;
   }
   
-  .navbar-user {
-    font-size: 14px;
-    color: #ccc;
+  .user-greeting {
+    font-weight: 500;
+    white-space: nowrap;
   }
   
-  button {
-    padding: 5px 10px;
-    background: #ff4b4b;
+  .logout-button {
+    background-color: #ff1744;
     color: white;
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
+    font-weight: bold;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
   }
   
-  button:hover {
-    background: #e13c3c;
+  .logout-button:hover {
+    background-color: #d50000;
   }
   
-  /* Responsive fix */
-  @media (max-width: 480px) {
+  /* RESPONSIVE DESIGN */
+  @media (max-width: 600px) {
     .navbar {
       flex-direction: column;
       align-items: flex-start;
+      padding: 16px;
       gap: 10px;
     }
   
-    .navbar-left, .navbar-right {
-      flex-direction: column;
-      align-items: flex-start;
+    .navbar-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+  
+    .logout-button {
+      width: fit-content;
     }
   }
   

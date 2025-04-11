@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Navbar from "../Navbar";
 import "./Dashboard.css";
 
-function Dashboard({ patients, selectedPatient, loading }) {
+function Dashboard({ patients, selectedPatient, loading, user }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,8 +26,11 @@ function Dashboard({ patients, selectedPatient, loading }) {
   };
 
   return (
-
+    <>
+          <Navbar user={user} />
     <div className="dashboard">
+      {/* 🔥 Top Navigation Bar */}
+
       <div className={`dashboard-buttons ${menuOpen ? "open" : ""}`}>
         <button
           className={isActive("/summary")}
@@ -52,8 +56,8 @@ function Dashboard({ patients, selectedPatient, loading }) {
           <span>Routine & Medication</span>
         </button>
 
-        <button 
-          className={`sos-button ${isSosActive()}`} 
+        <button
+          className={`sos-button ${isSosActive()}`}
           onClick={() => handleNavigation("/sos")}
         >
           <i className="icon sos-icon"></i>
@@ -61,6 +65,7 @@ function Dashboard({ patients, selectedPatient, loading }) {
         </button>
       </div>
     </div>
+    </>
   );
 }
 

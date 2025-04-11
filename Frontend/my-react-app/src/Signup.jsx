@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Signup.css';
 
-const Signup = () => {
+const Signup = ({ onSignup }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +11,7 @@ const Signup = () => {
     age: '',
     phone: ''
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,27 +25,23 @@ const Signup = () => {
   };
 
   const validateForm = () => {
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return false;
     }
 
-    // Validate email format
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address');
       return false;
     }
 
-    // Validate phone number
     const phoneRegex = /^\+?[0-9]{10,15}$/;
     if (!phoneRegex.test(formData.phone)) {
       setError('Please enter a valid phone number');
       return false;
     }
 
-    // Validate age
     if (isNaN(formData.age) || formData.age < 1) {
       setError('Please enter a valid age');
       return false;
@@ -59,33 +56,35 @@ const Signup = () => {
     setError('');
 
     if (!validateForm()) {
-        setLoading(false);
-        return;
+      setLoading(false);
+      return;
     }
 
     try {
-        const response = await fetch('http://localhost:8000/api/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(formData)
-        });
+      const response = await fetch('http://localhost:8000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData)
+      });
 
-        const data = await response.json();
-        
-        if (response.ok) {
-            navigate('/login');
-        } else {
-            setError(data.message || 'Signup failed');
-        }
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('user', JSON.stringify(data.user || formData)); // fallback if backend doesn't send user
+        if (onSignup) onSignup();
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Signup failed');
+      }
     } catch (err) {
-        console.error('Error:', err);
-        setError('Failed to connect to server. Please try again.');
+      console.error('Error:', err);
+      setError('Failed to connect to server. Please try again.');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -93,9 +92,9 @@ const Signup = () => {
     <div className="signup-container">
       <div className="signup-form-wrapper">
         <h2>Create Your Account</h2>
-        
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <form onSubmit={handleSubmit} className="signup-form">
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
@@ -109,7 +108,7 @@ const Signup = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -122,7 +121,7 @@ const Signup = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="phone">Phone Number</label>
             <input
@@ -135,7 +134,7 @@ const Signup = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="age">Age</label>
             <input
@@ -149,7 +148,7 @@ const Signup = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -162,7 +161,7 @@ const Signup = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <input
@@ -175,16 +174,12 @@ const Signup = () => {
               required
             />
           </div>
-          
-          <button 
-            type="submit" 
-            className="signup-button"
-            disabled={loading}
-          >
+
+          <button type="submit" className="signup-button" disabled={loading}>
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
-        
+
         <div className="signup-footer">
           <p>Already have an account? <Link to="/login">Log in</Link></p>
         </div>

@@ -16,57 +16,39 @@ const Summary = () => <div className="placeholder-page"><h1>Summary Page</h1><p>
 const Routine = () => <div className="placeholder-page"><h1>Routine & Medication</h1><p>This feature is coming soon!</p></div>;
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null); // null = checking
 
   useEffect(() => {
     const token = localStorage.getItem('user');
-    if (token) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    setIsAuthenticated(!!token);
   }, []);
+
+  if (isAuthenticated === null) {
+    // Show loading while checking auth
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   return (
     <div className="app">
       <Routes>
-        {/* Auth Routes */}
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
         } />
         <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
         <Route path="/signup" element={<Signup onSignup={() => setIsAuthenticated(true)} />} />
 
-        {/* Dashboard */}
         <Route path="/dashboard" element={
-          isAuthenticated ? (
-            <Dashboard />
-          ) : (
-            <Navigate to="/login" />
-          )
+          isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
         } />
-
-        {/* Placeholder Routes */}
         <Route path="/summary" element={isAuthenticated ? <Summary /> : <Navigate to="/login" />} />
         <Route path="/routine" element={isAuthenticated ? <Routine /> : <Navigate to="/login" />} />
         <Route path="/sos" element={isAuthenticated ? <SosButton /> : <Navigate to="/login" />} />
 
-        {/* Game Routes */}
-        <Route path="/games" element={
-          isAuthenticated ? <GameHome /> : <Navigate to="/login" />
-        } />
-        <Route path="/games/simon-says" element={
-          isAuthenticated ? <SimonSays /> : <Navigate to="/login" />
-        } />
-        <Route path="/games/picture-match" element={
-          isAuthenticated ? <PictureMatch /> : <Navigate to="/login" />
-        } />
-        <Route path="/games/word-scramble" element={
-          isAuthenticated ? <WordScramble /> : <Navigate to="/login" />
-        } />
-        <Route path="/games/visual-location" element={
-          isAuthenticated ? <VisualLocationMemory /> : <Navigate to="/login" />
-        } />
+        <Route path="/games" element={isAuthenticated ? <GameHome /> : <Navigate to="/login" />} />
+        <Route path="/games/simon-says" element={isAuthenticated ? <SimonSays /> : <Navigate to="/login" />} />
+        <Route path="/games/picture-match" element={isAuthenticated ? <PictureMatch /> : <Navigate to="/login" />} />
+        <Route path="/games/word-scramble" element={isAuthenticated ? <WordScramble /> : <Navigate to="/login" />} />
+        <Route path="/games/visual-location" element={isAuthenticated ? <VisualLocationMemory /> : <Navigate to="/login" />} />
       </Routes>
     </div>
   );
