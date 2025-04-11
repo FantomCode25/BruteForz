@@ -10,6 +10,8 @@ from uuid import uuid4
 import base64
 import requests
 from werkzeug.utils import secure_filename
+import groq
+from collections import defaultdict
 
 # Custom JSON encoder to handle ObjectId
 class MongoJSONEncoder(json.JSONEncoder):
@@ -27,6 +29,12 @@ app.json_encoder = MongoJSONEncoder
 
 # Set ImgBB API key
 os.environ["IMGBB_API_KEY"] = "ae2817b2ebddd8b0160555cc377b8ff9"
+
+# Set Groq API key (you need to set this with your own key)
+os.environ["GROQ_API_KEY"] = "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"
+
+# Initialize Groq client
+groq_client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Connect to MongoDB
 mongo_uri = "mongodb+srv://bossutkarsh30:YOCczedaElKny6Dd@cluster0.gixba.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -220,78 +228,101 @@ def get_contacts(user_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 # Helper function to notify external service about new contact
-# Helper function to notify external service about new contact
 def notify_external_service(name, photo_url):
     try:
-        # Send POST request to the external endpoint with form data, not JSON
+        if not name or not name.strip():
+            print("Error: Username cannot be empty")
+            return False
+            
+        # Prepare payload
+        payload = {
+            "username": name.strip(),
+            "photo_url": photo_url or ""
+        }
+        
+        # Log the request details
+        print(f"Sending notification to external service with payload: {payload}")
+        
+        # Send request with JSON payload and proper headers
         response = requests.post(
             "https://lbq629b2-5000.inc1.devtunnels.ms/add",
-            data={  # Changed from json to data to send as form data
-                "username": name,
-                "photo_url": photo_url
-            }
+            json=payload,  # Use json parameter instead of data
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            timeout=10  # Add timeout
         )
+        
+        # Log the response
+        print(f"External service response: {response.status_code} - {response.text}")
         
         if response.status_code != 200:
             print(f"External service notification failed: {response.status_code}, {response.text}")
             return False
         
-        print(f"External service notification succeeded: {response.text}")
         return True
+        
+    except requests.exceptions.Timeout:
+        print("External service notification timeout")
+        return False
+    except requests.exceptions.RequestException as e:
+        print(f"External service request failed: {str(e)}")
+        return False
     except Exception as e:
         print(f"Error notifying external service: {str(e)}")
         traceback.print_exc()
         return False
-        
+
 # Route to add a new contact
 @app.route('/api/contacts', methods=['POST'])
 def add_contact():
     try:
         contact_data = request.json
-        
-        # Check for required fields - name and user_id are required
+        if not contact_data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+            
+        # Validate required fields
         required_fields = ['name', 'user_id']
-        
         for field in required_fields:
-            if field not in contact_data:
-                return jsonify({"success": False, "error": f"Missing required field: {field}"}), 400
-        
-        # Add timestamp and generate ID if not provided
+            if not contact_data.get(field):
+                return jsonify({"success": False, "error": f"Missing or empty required field: {field}"}), 400
+                
+        # Clean and validate name
+        contact_data['name'] = contact_data['name'].strip()
+        if not contact_data['name']:
+            return jsonify({"success": False, "error": "Name cannot be empty"}), 400
+            
+        # Add timestamp and generate ID
         contact_data['timestamp'] = datetime.utcnow()
-        if '_id' not in contact_data:
-            contact_data['_id'] = str(uuid4())
+        contact_data['_id'] = str(uuid4())
         
-        # Ensure optional fields exist even if empty
-        if 'email' not in contact_data:
-            contact_data['email'] = ""
-        if 'phone' not in contact_data:
-            contact_data['phone'] = ""
-        if 'isEmergency' not in contact_data:
-            contact_data['isEmergency'] = False
-        if 'photo_url' not in contact_data:
-            contact_data['photo_url'] = ""
-        if 'conversation_data' not in contact_data:
-            # Default conversation data
-            contact_data['conversation_data'] = [
-                {"text": "Hello", "timestamp": datetime.utcnow().isoformat()},
-                {"text": "hi", "timestamp": (datetime.utcnow() + timedelta(seconds=15)).isoformat()}
-            ]
+        # Set default values for optional fields
+        contact_data.setdefault('email', "")
+        contact_data.setdefault('phone', "")
+        contact_data.setdefault('isEmergency', False)
+        contact_data.setdefault('photo_url', "")
+        contact_data.setdefault('conversation_data', [
+            {"text": "Hello", "timestamp": datetime.utcnow().isoformat()},
+            {"text": "hi", "timestamp": (datetime.utcnow() + timedelta(seconds=15)).isoformat()}
+        ])
         
-        # Insert contact
+        # First try to insert into database
         result = contacts_collection.insert_one(contact_data)
         
-        # After successfully adding the contact to database, notify external service
+        # Then notify external service
         notification_result = notify_external_service(
             name=contact_data['name'],
-            photo_url=contact_data['photo_url']
+            photo_url=contact_data.get('photo_url', '')
         )
         
         return jsonify({
-            "success": True, 
+            "success": True,
             "message": "Contact added successfully",
             "contact_id": str(result.inserted_id),
             "external_notification": "succeeded" if notification_result else "failed"
         })
+        
     except Exception as e:
         print(f"Error in add_contact: {str(e)}")
         traceback.print_exc()
@@ -342,6 +373,253 @@ def update_contact(contact_id):
         return jsonify({"success": True, "message": "Contact updated successfully"})
     except Exception as e:
         print(f"Error in update_contact: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# New route to get known persons (contacts) for a patient
+@app.route('/api/known-persons/<patient_id>', methods=['GET'])
+def get_known_persons(patient_id):
+    try:
+        contacts = list(contacts_collection.find({"user_id": patient_id}))
+        # Transform contacts to known_persons format
+        known_persons = []
+        for contact in contacts:
+            known_persons.append({
+                "known_person_id": contact["_id"],
+                "name": contact["name"],
+                "photo_url": contact.get("photo_url", ""),
+                "isEmergency": contact.get("isEmergency", False)
+            })
+        
+        return jsonify({"success": True, "known_persons": known_persons})
+    except Exception as e:
+        print(f"Error in get_known_persons: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# Helper function to generate summary from conversations
+def generate_summary(conversations, person_name):
+    try:
+        # Format conversation data for the AI
+        formatted_messages = []
+        for message in conversations:
+            speaker = "Known Person" if person_name else "Contact"
+            formatted_messages.append({
+                "text": message["text"],
+                "speaker": speaker if message.get("from_contact", True) else "You",
+                "timestamp": message["timestamp"]
+            })
+        
+        # Create a prompt for summarization
+        prompt = f"""
+        Please analyze the following conversation between a patient and {person_name} and provide a comprehensive summary.
+        
+        Focus on:
+        1. Main topics discussed
+        2. Any important points, questions, or concerns raised
+        3. Any actionable items or follow-ups mentioned
+        4. The overall tone and nature of the conversation
+        
+        Format your response with the following sections:
+        **Main Topics:** Summarize the key subjects discussed
+        **Important Points:** List any significant information shared
+        **Action Items:** Note any tasks, follow-ups, or commitments made
+        **Relationship Context:** Provide insights about the relationship based on the conversation
+        
+        Here's the conversation:
+        
+        {json.dumps(formatted_messages, indent=2)}
+        """
+        
+        # Call Groq API for summarization
+        response = groq_client.chat.completions.create(
+            model="llama3-70b-8192",  # Using Llama 3 70B model
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that summarizes conversations for patients with memory difficulties."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.3
+        )
+        
+        # Extract the summary
+        summary = response.choices[0].message.content
+        return summary
+    except Exception as e:
+        print(f"Error generating summary: {str(e)}")
+        traceback.print_exc()
+        return "Unable to generate summary due to an error."
+
+# New route to summarize conversation for a specific date
+@app.route('/api/summarize-conversation', methods=['GET'])
+def summarize_conversation():
+    try:
+        patient_id = request.args.get('patient_id')
+        known_person_id = request.args.get('known_person_id')
+        date_str = request.args.get('date')
+        
+        if not patient_id or not known_person_id or not date_str:
+            return jsonify({
+                "success": False,
+                "error": "Missing required parameters: patient_id, known_person_id, and date"
+            }), 400
+        
+        # Parse the date
+        date = datetime.strptime(date_str, '%Y-%m-%d')
+        next_day = date + timedelta(days=1)
+        
+        # Get the contact document
+        contact = contacts_collection.find_one({"_id": known_person_id, "user_id": patient_id})
+        
+        if not contact:
+            # Try with ObjectId if ID looks like one
+            if len(known_person_id) == 24 and all(c in '0123456789abcdefABCDEF' for c in known_person_id):
+                contact = contacts_collection.find_one({"_id": ObjectId(known_person_id), "user_id": patient_id})
+        
+        if not contact:
+            return jsonify({
+                "success": False,
+                "summary": "This contact does not exist or doesn't belong to the patient."
+            })
+        
+        # Filter messages for the specified date
+        if 'conversation_data' not in contact or not contact['conversation_data']:
+            return jsonify({
+                "success": False,
+                "summary": "No conversation data found for this contact."
+            })
+            
+        # Filter messages for the specified date
+        date_messages = []
+        for message in contact['conversation_data']:
+            try:
+                message_time = datetime.fromisoformat(message['timestamp'].replace('Z', '+00:00'))
+                if date <= message_time < next_day:
+                    date_messages.append(message)
+            except (ValueError, TypeError) as e:
+                print(f"Error parsing message timestamp: {e}")
+                continue
+                
+        if not date_messages:
+            return jsonify({
+                "success": False,
+                "summary": f"No conversation found for {date_str}.",
+                "conversation_count": 0,
+                "conversation_length": 0,
+                "date": date_str,
+                "original_messages": []
+            })
+            
+        # Format messages for display
+        formatted_messages = []
+        total_length = 0
+        for message in date_messages:
+            speaker = contact['name'] if message.get('from_contact', True) else "You"
+            formatted_messages.append({
+                "text": message["text"],
+                "speaker": speaker,
+                "timestamp": message["timestamp"]
+            })
+            total_length += len(message["text"])
+            
+        # Generate summary using Groq
+        summary = generate_summary(date_messages, contact['name'])
+        
+        return jsonify({
+            "success": True,
+            "summary": summary,
+            "conversation_count": len(date_messages),
+            "conversation_length": total_length,
+            "date": date_str,
+            "original_messages": formatted_messages
+        })
+    except Exception as e:
+        print(f"Error in summarize_conversation: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# New route to summarize all conversations with a known person
+@app.route('/api/summarize-all-conversations', methods=['GET'])
+def summarize_all_conversations():
+    try:
+        patient_id = request.args.get('patient_id')
+        known_person_id = request.args.get('known_person_id')
+        
+        if not patient_id or not known_person_id:
+            return jsonify({
+                "success": False,
+                "error": "Missing required parameters: patient_id and known_person_id"
+            }), 400
+        
+        # Get the contact document
+        contact = contacts_collection.find_one({"_id": known_person_id, "user_id": patient_id})
+        
+        if not contact:
+            # Try with ObjectId if ID looks like one
+            if len(known_person_id) == 24 and all(c in '0123456789abcdefABCDEF' for c in known_person_id):
+                contact = contacts_collection.find_one({"_id": ObjectId(known_person_id), "user_id": patient_id})
+        
+        if not contact:
+            return jsonify({
+                "success": False,
+                "summary": "This contact does not exist or doesn't belong to the patient."
+            })
+        
+        # Check if conversation data exists
+        if 'conversation_data' not in contact or not contact['conversation_data']:
+            return jsonify({
+                "success": False,
+                "summary": "No conversation data found for this contact."
+            })
+            
+        # Format messages for display and organize by date
+        messages_by_date = defaultdict(list)
+        conversation_dates = set()
+        total_length = 0
+        
+        for message in contact['conversation_data']:
+            try:
+                message_time = datetime.fromisoformat(message['timestamp'].replace('Z', '+00:00'))
+                date_str = message_time.strftime('%Y-%m-%d')
+                
+                speaker = contact['name'] if message.get('from_contact', True) else "You"
+                formatted_message = {
+                    "text": message["text"],
+                    "speaker": speaker,
+                    "timestamp": message["timestamp"]
+                }
+                
+                messages_by_date[date_str].append(formatted_message)
+                conversation_dates.add(date_str)
+                total_length += len(message["text"])
+            except (ValueError, TypeError) as e:
+                print(f"Error parsing message timestamp: {e}")
+                continue
+                
+        if not messages_by_date:
+            return jsonify({
+                "success": False,
+                "summary": "No valid conversation data found for analysis.",
+                "conversation_count": 0,
+                "conversation_length": 0
+            })
+            
+        # Sort dates in reverse chronological order
+        conversation_dates = sorted(list(conversation_dates), reverse=True)
+        
+        # Generate a comprehensive summary using Groq
+        summary = generate_summary(contact['conversation_data'], contact['name'])
+        
+        return jsonify({
+            "success": True,
+            "summary": summary,
+            "conversation_count": len(contact['conversation_data']),
+            "conversation_length": total_length,
+            "messages_by_date": messages_by_date,
+            "conversation_dates": conversation_dates
+        })
+    except Exception as e:
+        print(f"Error in summarize_all_conversations: {str(e)}")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 

@@ -11,20 +11,7 @@ import GameHome from "./Games/GameHome";
 import Dashboard from "./Dashboard/dashboard";
 import SosButton from "./Sos/SosButton";
 import Contacts from "./Contacts";
-
-// Placeholder components
-const Summary = () => (
-  <div className="placeholder-page">
-    <h1>Summary Page</h1>
-    <p>This feature is coming soon!</p>
-  </div>
-);
-const Routine = () => (
-  <div className="placeholder-page">
-    <h1>Routine & Medication</h1>
-    <p>This feature is coming soon!</p>
-  </div>
-);
+import Summary from "./Summary.jsx";// Import the actual Summary component
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(null); // null = checking
@@ -66,10 +53,10 @@ function App() {
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
         />
 
-<Route
-  path="/contacts"
-  element={isAuthenticated ? <Contacts /> : <Navigate to="/login" />}
-/>
+        <Route
+          path="/contacts"
+          element={isAuthenticated ? <Contacts /> : <Navigate to="/login" />}
+        />
 
         <Route
           path="/summary"
@@ -77,7 +64,14 @@ function App() {
         />
         <Route
           path="/routine"
-          element={isAuthenticated ? <Routine /> : <Navigate to="/login" />}
+          element={isAuthenticated ? (
+            <div className="placeholder-page">
+              <h1>Routine & Medication</h1>
+              <p>This feature is coming soon!</p>
+            </div>
+          ) : (
+            <Navigate to="/login" />
+          )}
         />
         <Route
           path="/sos"
