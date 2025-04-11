@@ -7,6 +7,9 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const userData = JSON.parse(localStorage.getItem('user'));
+
+
   const [isRecording, setIsRecording] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -32,7 +35,7 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
 
       {/* User Greeting */}
       <div className="user-profile-card">
-        <h2>Hello, {user?.name || "User"}!</h2>
+        <h2>Hello, {userData?.name || "User"}!</h2>
         <p>
           Today is{" "}
           {new Date().toLocaleDateString("en-US", {

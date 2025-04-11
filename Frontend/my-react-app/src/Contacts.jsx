@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavBack from "./NavBack";
 
 import "./Contacts.css";
 
@@ -261,7 +262,7 @@ function Contacts() {
 
   return (
     <div className="contacts-page">
-      
+      <NavBack />
       <div className="contacts-container">
         <h1>My Contacts</h1>
         

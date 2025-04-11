@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SosButton.css';
+import NavBack from '../NavBack';
 
 const SosButton = ({ user, apiUrl = 'http://localhost:8000/api' }) => {
   const [sending, setSending] = useState(false);
@@ -123,6 +124,7 @@ const SosButton = ({ user, apiUrl = 'http://localhost:8000/api' }) => {
 
   return (
     <div className="sos-page-container">
+      <NavBack />
       <div className="sos-info-header">
         <h1>Memory Helper Emergency Alert</h1>
         <p className="sos-description">
