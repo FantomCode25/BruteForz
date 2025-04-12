@@ -208,8 +208,8 @@ function VisualLocationMemory() {
       <GameNav user={user} />
       
       <div className="game-header">
-        <Link to="/games" className="back-button">
-          ← Back to Games
+        <Link style={{color:"black", display:"flex", fontSize:"30px",width:"30%"}} to="/games" className="back-button">
+          ←
         </Link>
         <div className="visual-game-header">
           Score: {score} | Level: {level} | Lives: {'💚'.repeat(remainingLives)}

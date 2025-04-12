@@ -148,7 +148,7 @@ function SimonSays() {
       <GameNav user={user} />
       
       <div className="game-header">
-        <Link to="/games" className="back-button">
+        <Link style={{color:"black", display:"flex", fontSize:"15px",width:"30%"}} to="/games" className="back-button">
           ← Back to Games
         </Link>
         <div>
