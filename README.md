@@ -66,30 +66,15 @@ Current tools are fragmented, lack personalization, and are often too complex fo
 - **Backend:** Flask (Python)  
 - **Database:** MongoDB Atlas  
 - **APIs / Libraries:**  
-  - Face Recognition: `face-api.js`, `opencv-python`  
-  - Notifications: Web Push / EmailJS  
-  - Game Logic: Custom engine with React Canvas  
-- **Tools:** Figma, GitHub, Render, Postman
+  - Face Recognition: `scrfd`, `arcface`  
+  - Notifications: APSCHEDULER   
+- **Tools:** GitHub, Render, Postman
 
 ---
 
-## 🧩 Architecture / Diagram
 
-```mermaid
-graph TD
-A[User Interface (React)] --> B[API Gateway (Flask)]
-B --> C[Face Recognition Service]
-B --> D[Medicine Reminder Scheduler]
-B --> E[Cognitive Game Engine]
-B --> F[SOS + Contact Manager]
-F --> G[(MongoDB Atlas)]
-C --> G
-D --> G
-```
 
-> 📌 Diagrams, mockups, and UI previews are located in the `/designs` folder.
 
----
 
 ## 🧪 Installation & Usage
 
