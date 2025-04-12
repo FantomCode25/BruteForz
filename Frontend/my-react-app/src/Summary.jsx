@@ -237,12 +237,12 @@ function Summary() {
   return (
     <div className="container">
       <nav className="app-nav">
-        <h1>Conversation Insights</h1>
+        <h1 style={{color:"black"}}>Conversation Insights</h1>
         <div className="nav-buttons">
-          <button onClick={handleDashboardClick} className="nav-button">
+          <button onClick={handleDashboardClick} style={{border:"1px solid black"}}className="nav-button">
             Dashboard
           </button>
-          <button onClick={handleLogoutClick} className="nav-button">
+          <button onClick={handleLogoutClick} style={{border:"1px solid black"}}className="nav-button">
             Logout
           </button>
         </div>

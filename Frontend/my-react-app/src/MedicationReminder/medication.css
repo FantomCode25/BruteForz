@@ -1,0 +1,388 @@
+/* Medication Reminder App - Professional UI/UX Design */
+
+/* Main container and common elements */
+.medication-container {
+    background-color: #f9fafb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #4a4a4a;
+  }
+  
+  .medication-header {
+    color: #4f46e5;
+    position: relative;
+    padding-bottom: 0.75rem;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .medication-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #4f46e5, #818cf8);
+    border-radius: 3px;
+  }
+  
+  .medication-subheader {
+    color: #4a4a4a;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+  }
+  
+  /* Card styling */
+  .medication-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    transition: box-shadow 0.3s, transform 0.3s;
+    overflow: hidden;
+    background-color: #ffffff;
+  }
+  
+  .medication-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-3px);
+  }
+  
+  /* Form styling */
+  .medication-input, .medication-select {
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-size: 0.95rem;
+    border: 1px solid #d1d5db;
+  }
+  
+  .medication-input:focus, .medication-select:focus {
+    border-color: #818cf8 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+    outline: none;
+  }
+  
+  .medication-datetime {
+    background-color: white;
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+  }
+  
+  /* Label styling */
+  .medication-label {
+    font-weight: 500 !important;
+    color: #4a4a4a;
+    margin-bottom: 0.5rem !important;
+    display: block;
+  }
+  
+  /* Button styling */
+  .medication-button {
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 1.25rem !important;
+  }
+  
+  .medication-button::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-100%);
+    transition: transform 0.2s ease-out;
+  }
+  
+  .medication-button:hover::after {
+    transform: translateY(0);
+  }
+  
+  /* Primary button */
+  .medication-button-primary {
+    background: linear-gradient(135deg, #4f46e5, #3730a3) !important;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3) !important;
+    color: white;
+    border: none;
+  }
+  
+  .medication-button-primary:hover {
+    background: linear-gradient(135deg, #3730a3, #4f46e5) !important;
+    box-shadow: 0 6px 10px -2px rgba(79, 70, 229, 0.4) !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Success button */
+  .medication-button-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
+    color: white;
+    border: none;
+  }
+  
+  .medication-button-success:hover {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    box-shadow: 0 6px 10px -2px rgba(16, 185, 129, 0.4) !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Secondary/neutral button */
+  .medication-button-neutral {
+    background-color: #e5e7eb !important;
+    color: #374151 !important;
+    border: none;
+  }
+  
+  .medication-button-neutral:hover {
+    background-color: #d1d5db !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Reminder card styling */
+  .medication-reminder-item {
+    transition: transform 0.3s, border-color 0.3s;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid transparent !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+  }
+  
+  .medication-reminder-item:hover {
+    transform: translateY(-2px);
+    border-left-color: #4f46e5 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Status styles for reminders */
+  .medication-status-active {
+    border-left-color: #818cf8 !important;
+  }
+  
+  .medication-status-completed {
+    border-left-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.05);
+  }
+  
+  .medication-status-missed {
+    border-left-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.05);
+  }
+  
+  /* Animations for reminder list */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .medication-reminder-item {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  /* Form groups */
+  .medication-form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Loading animation */
+  .medication-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(79, 70, 229, 0.2);
+    border-radius: 50%;
+    border-top-color: #4f46e5;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Toast notification styles */
+  .medication-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+    z-index: 50;
+  }
+  
+  .medication-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  .medication-toast-success {
+    border-left: 4px solid #10b981;
+  }
+  
+  .medication-toast-error {
+    border-left: 4px solid #ef4444;
+  }
+  
+  /* Error message styling */
+  .medication-error {
+    background-color: #fee2e2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #b91c1c !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  /* Custom scrollbar */
+  .medication-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .medication-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .medication-container::-webkit-scrollbar-thumb {
+    background: #818cf8;
+    border-radius: 4px;
+  }
+  
+  .medication-container::-webkit-scrollbar-thumb:hover {
+    background: #4f46e5;
+  }
+  
+  /* Link styling */
+  .medication-link-edit {
+    color: #4f46e5 !important;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .medication-link-edit:hover {
+    color: #3730a3 !important;
+  }
+  
+  .medication-link-delete {
+    color: #ef4444 !important;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .medication-link-delete:hover {
+    color: #dc2626 !important;
+  }
+  
+  /* Edit form styles */
+  .medication-edit-form {
+    background-color: rgba(249, 250, 251, 0.5);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+  
+  /* Title styling */
+  .medication-title {
+    font-weight: bold;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .medication-title-completed {
+    text-decoration: line-through;
+    color: #9ca3af;
+  }
+  
+  /* Status indicator buttons */
+  .medication-status-indicator {
+    padding: 0.25rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .medication-status-indicator:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+  }
+  
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .medication-container {
+      padding: 1rem !important;
+    }
+    
+    .medication-header {
+      font-size: 1.75rem;
+    }
+    
+    .medication-subheader {
+      font-size: 1.25rem;
+    }
+    
+    .medication-reminder-item {
+      padding: 1rem !important;
+    }
+    
+    .medication-button {
+      padding: 0.6rem 1rem !important;
+    }
+    
+    .medication-card {
+      padding: 1.25rem !important;
+    }
+  }
+  
+  /* Enhanced layout for mobile */
+  @media (max-width: 640px) {
+    .medication-form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .medication-input, .medication-select, .medication-datetime {
+      padding: 0.6rem 0.75rem !important;
+    }
+    
+    .medication-header {
+      font-size: 1.5rem;
+    }
+    
+    .medication-subheader {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+    }
+    
+    .medication-card {
+      border-radius: 10px;
+    }
+  }
+  
+  /* Dashboard wrapper */
+  .medication-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  
+  .medication-dashboard-column {
+    flex: 1 1 100%;
+  }
+  
+  @media (min-width: 768px) {
+    .medication-dashboard-column {
+      flex: 1 1 45%;
+    }
+  }

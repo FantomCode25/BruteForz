@@ -660,6 +660,61 @@ def summarize_all_conversations():
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+# Helper function to check and send reminders
+def check_and_send_reminder(reminder):
+    """Helper function to check if it's time to send a reminder"""
+    try:
+        current_time = datetime.now()
+        scheduled_time = reminder['date_time']
+        
+        # Calculate time difference in seconds
+        time_diff = abs((current_time - scheduled_time).total_seconds())
+        
+        # Check if within 10-second window
+        if time_diff <= 10:
+            send_email(
+                reminder['email'],
+                f"Medication Reminder: {reminder['name']}",
+                f"Time to take your medication: {reminder['name']}\n"
+                f"Dosage: {reminder['dosage']}\n"
+                f"Instructions: {reminder['instruction']}"
+            )
+            return True
+        return False
+    except Exception as e:
+        print(f"Error checking reminder: {str(e)}")
+        return False
+
+# Add new function to send missed medication reminder
+def send_missed_medication_reminder(reminder):
+    try:
+        # Check if the medication has been marked as completed
+        current_reminder = medication_reminders_collection.find_one({'_id': reminder['_id']})
+        
+        if current_reminder and current_reminder.get('status') == 'pending':
+            # Send missed medication email
+            send_email(
+                reminder['email'],
+                f"⚠️ Missed Medication Alert: {reminder['name']}",
+                f"IMPORTANT: You have missed your scheduled medication:\n\n"
+                f"Medication: {reminder['name']}\n"
+                f"Dosage: {reminder['dosage']}\n"
+                f"Instructions: {reminder['instruction']}\n\n"
+                f"This medication was scheduled for: {reminder['date_time'].strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"Please take your medication as soon as possible and consult your healthcare provider if needed."
+            )
+            
+            # Update reminder status to missed
+            medication_reminders_collection.update_one(
+                {'_id': reminder['_id']},
+                {'$set': {'status': 'missed'}}
+            )
+            
+            print(f"Sent missed medication alert for reminder {reminder['_id']}")
+            
+    except Exception as e:
+        print(f"Error sending missed medication reminder: {str(e)}")
+
 # Route to create a medication reminder
 @app.route('/api/medication-reminders', methods=['POST'])
 def create_medication_reminder():
@@ -670,16 +725,15 @@ def create_medication_reminder():
             if not data.get(field):
                 return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
 
-        # Parse and validate the reminder date-time
+        # Parse and validate the reminder date-time using system time
         reminder_time = datetime.strptime(data['date_time'], '%Y-%m-%d %H:%M:%S')
-        if reminder_time < datetime.utcnow():
+        current_time = datetime.now()
+        
+        # Check if reminder time is within valid range
+        if reminder_time < current_time:
             return jsonify({'success': False, 'message': 'Reminder date-time must be in the future'}), 400
 
-        # Validate frequency
-        if data['frequency'] not in ['daily', 'weekly', 'monthly']:
-            return jsonify({'success': False, 'message': 'Invalid frequency. Choose from daily, weekly, or monthly'}), 400
-
-        # Save the reminder to the database
+        # Save the reminder to the database with status field
         reminder = {
             'name': data['name'],
             'dosage': data['dosage'],
@@ -687,39 +741,44 @@ def create_medication_reminder():
             'date_time': reminder_time,
             'frequency': data['frequency'],
             'email': data['email'],
-            'created_at': datetime.utcnow()
+            'created_at': current_time,
+            'status': 'pending',  # Add status field
+            'completed_at': None  # Add completed_at field
         }
         result = medication_reminders_collection.insert_one(reminder)
 
-        # Schedule the email notification
-        if data['frequency'] == 'daily':
-            trigger = 'interval'
-            interval = {'days': 1}
-        elif data['frequency'] == 'weekly':
-            trigger = 'interval'
-            interval = {'weeks': 1}
-        elif data['frequency'] == 'monthly':
-            trigger = 'cron'
-            interval = {'day': reminder_time.day, 'hour': reminder_time.hour, 'minute': reminder_time.minute}
-
+        # Schedule both the initial reminder and the missed medication check
+        reminder_id = str(result.inserted_id)
+        
+        # Schedule initial reminder
         scheduler.add_job(
-            func=send_email,
-            trigger=trigger,
-            **interval,
-            args=[
-                data['email'],
-                f"Medication Reminder: {data['name']}",
-                f"Time to take your medication: {data['name']} (Dosage: {data['dosage']})\nInstructions: {data['instruction']}"
-            ],
-            id=str(result.inserted_id)
+            func=check_and_send_reminder,
+            trigger='interval',
+            seconds=10,
+            args=[reminder],
+            id=f"{reminder_id}_check"
         )
-        print(f"Scheduled email job: {str(result.inserted_id)}")
 
-        return jsonify({'success': True, 'message': 'Medication reminder created successfully', 'reminder_id': str(result.inserted_id)}), 201
+        # Schedule missed medication reminder
+        scheduler.add_job(
+            func=send_missed_medication_reminder,
+            trigger='date',
+            run_date=reminder_time + timedelta(seconds=30),
+            args=[reminder],
+            id=f"{reminder_id}_missed"
+        )
+
+        print(f"Scheduled reminder check job: {reminder_id} for {reminder_time}")
+
+        return jsonify({
+            'success': True, 
+            'message': 'Medication reminder created successfully', 
+            'reminder_id': reminder_id
+        }), 201
+        
     except Exception as e:
         print(f"Error creating medication reminder: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to create medication reminder: {str(e)}'}), 500
-
 
 # Route to update a medication reminder
 @app.route('/api/medication-reminders/<reminder_id>', methods=['PUT'])
@@ -783,7 +842,6 @@ def update_medication_reminder(reminder_id):
         print(f"Error updating medication reminder: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to update medication reminder: {str(e)}'}), 500
 
-
 # Route to delete a medication reminder
 @app.route('/api/medication-reminders/<reminder_id>', methods=['DELETE'])
 def delete_medication_reminder(reminder_id):
@@ -801,14 +859,63 @@ def delete_medication_reminder(reminder_id):
         print(f"Error deleting medication reminder: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to delete medication reminder: {str(e)}'}), 500
 
-# Route to get all medication reminders
+# Route to mark medication as taken
+@app.route('/api/medication-reminders/<reminder_id>/complete', methods=['POST'])
+def mark_medication_taken(reminder_id):
+    try:
+        # Update the reminder status
+        result = medication_reminders_collection.update_one(
+            {'_id': ObjectId(reminder_id)},
+            {
+                '$set': {
+                    'status': 'completed',
+                    'completed_at': datetime.now()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'success': False, 'message': 'Reminder not found'}), 404
+
+        # Remove the scheduled missed medication job since it's been taken
+        try:
+            scheduler.remove_job(f"{reminder_id}_missed")
+        except Exception as e:
+            print(f"Warning: Could not remove missed medication job: {str(e)}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Medication marked as taken successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error marking medication as taken: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# Update the get_medication_reminders route to include status
 @app.route('/api/medication-reminders', methods=['GET'])
 def get_medication_reminders():
     try:
-        reminders = list(medication_reminders_collection.find({}, {"_id": 1, "name": 1, "dosage": 1, "instruction": 1, "date_time": 1, "frequency": 1, "email": 1}))
-        # Convert ObjectId to string for JSON serialization
+        reminders = list(medication_reminders_collection.find({}, {
+            "_id": 1, 
+            "name": 1, 
+            "dosage": 1, 
+            "instruction": 1, 
+            "date_time": 1, 
+            "frequency": 1, 
+            "email": 1,
+            "status": 1,
+            "completed_at": 1
+        }))
+        
+        # Convert ObjectId to string and adjust times to local time
         for reminder in reminders:
             reminder["_id"] = str(reminder["_id"])
+            if reminder.get("date_time"):
+                reminder["date_time"] = reminder["date_time"].strftime('%Y-%m-%d %H:%M:%S')
+            if reminder.get("completed_at"):
+                reminder["completed_at"] = reminder["completed_at"].strftime('%Y-%m-%d %H:%M:%S')
+                
         return jsonify({"success": True, "reminders": reminders}), 200
     except Exception as e:
         print(f"Error fetching medication reminders: {str(e)}")
@@ -860,7 +967,6 @@ def create_routine():
         print(f"Error creating routine: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to create routine: {str(e)}'}), 500
 
-
 # Helper function to schedule routine email notifications
 def schedule_routine_email(routine, routine_id):
     try:
@@ -888,7 +994,6 @@ def schedule_routine_email(routine, routine_id):
     except Exception as e:
         print(f"Error scheduling routine email: {str(e)}")
 
-
 # Route to get all routines
 @app.route('/api/routines', methods=['GET'])
 def get_routines():
@@ -900,7 +1005,6 @@ def get_routines():
     except Exception as e:
         print(f"Error fetching routines: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to fetch routines: {str(e)}'}), 500
-
 
 # Route to update a routine
 @app.route('/api/routines/<routine_id>', methods=['PUT'])
@@ -942,7 +1046,6 @@ def update_routine(routine_id):
         print(f"Error updating routine: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to update routine: {str(e)}'}), 500
 
-
 # Route to delete a routine
 @app.route('/api/routines/<routine_id>', methods=['DELETE'])
 def delete_routine(routine_id):
@@ -961,4 +1064,18 @@ def delete_routine(routine_id):
         return jsonify({'success': False, 'message': f'Failed to delete routine: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    try:
+        # Enable CORS for development
+        CORS(app, resources={
+            r"/api/*": {
+                "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+                "methods": ["GET", "POST", "PUT", "DELETE"],
+                "allow_headers": ["Content-Type"]
+            }
+        })
+        
+        print("Starting Flask server on http://localhost:5000")
+        app.run(host='0.0.0.0', port=5000, debug=True)
+    except Exception as e:
+        print(f"Server failed to start: {str(e)}")
+        traceback.print_exc()
