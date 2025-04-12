@@ -110,6 +110,8 @@ git clone https://github.com/your-org/echo-mind.git
 # Navigate to frontend
 cd echo-mind/frontend
 
+cd frontend/my-react-app
+
 # Install dependencies
 npm install
 
