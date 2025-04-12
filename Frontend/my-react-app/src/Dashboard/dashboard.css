@@ -153,7 +153,11 @@
   background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
   color: white;
 }
-
+.record-button{
+  background-color: #fea665;
+  margin: 10px 100px;
+  font-size: 20px;
+}
 /* Icons */
 .icon {
   display: block;
