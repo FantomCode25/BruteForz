@@ -75,8 +75,8 @@ function Dashboard({ patients, selectedPatient, loading, user }) {
         </button>
 
         <button 
-          className={`dashboard-tile ${isActive("/routine")}`} 
-          onClick={() => handleNavigation("/routine")}
+          className={`dashboard-tile ${isActive("/medication-reminder")}`} 
+          onClick={() => handleNavigation("/medication-reminder")}
         >
           <i className="icon routine-icon"></i>
           <span>Routine & Medication</span>

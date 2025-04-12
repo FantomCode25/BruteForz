@@ -12,6 +12,10 @@ import requests
 from werkzeug.utils import secure_filename
 import groq
 from collections import defaultdict
+from apscheduler.schedulers.background import BackgroundScheduler
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import smtplib
 
 # Custom JSON encoder to handle ObjectId
 class MongoJSONEncoder(json.JSONEncoder):
@@ -47,9 +51,42 @@ try:
     patients_collection = db["patient"]
     games_collection = db["games"]
     contacts_collection = db["contacts"]
+    routines_collection = db["routines"]
+    medication_reminders_collection = db["medications"]
 except Exception as e:
     print(f"MongoDB connection error: {str(e)}")
     traceback.print_exc()
+
+# Initialize the scheduler
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+# Helper function to send email notifications
+def send_email(to_email, subject, body):
+    try:
+        # email_address = os.getenv("EMAIL_ADDRESS") or "your_email@example.com"
+        # email_password = os.getenv("EMAIL_PASSWORD") or "your_email_password"
+        
+        email_address = "echomind.reminder@gmail.com"
+        email_password = "wjap csdz xrxb aknz"
+
+        print(f"Using email address: {email_address}")
+        print("Connecting to SMTP server...")
+
+        msg = MIMEMultipart()
+        msg['From'] = email_address
+        msg['To'] = to_email
+        msg['Subject'] = subject
+
+        msg.attach(MIMEText(body, 'plain'))
+
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(email_address, email_password)
+            server.send_message(msg)
+        print(f"Email sent to {to_email}")
+    except Exception as e:
+        print(f"SMTP connection error: {str(e)}")
 
 # New route to handle image uploads
 @app.route('/api/upload-image', methods=['POST'])
@@ -622,6 +659,306 @@ def summarize_all_conversations():
         print(f"Error in summarize_all_conversations: {str(e)}")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
+
+# Route to create a medication reminder
+@app.route('/api/medication-reminders', methods=['POST'])
+def create_medication_reminder():
+    try:
+        data = request.json
+        required_fields = ['name', 'dosage', 'instruction', 'date_time', 'frequency', 'email']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+
+        # Parse and validate the reminder date-time
+        reminder_time = datetime.strptime(data['date_time'], '%Y-%m-%d %H:%M:%S')
+        if reminder_time < datetime.utcnow():
+            return jsonify({'success': False, 'message': 'Reminder date-time must be in the future'}), 400
+
+        # Validate frequency
+        if data['frequency'] not in ['daily', 'weekly', 'monthly']:
+            return jsonify({'success': False, 'message': 'Invalid frequency. Choose from daily, weekly, or monthly'}), 400
+
+        # Save the reminder to the database
+        reminder = {
+            'name': data['name'],
+            'dosage': data['dosage'],
+            'instruction': data['instruction'],
+            'date_time': reminder_time,
+            'frequency': data['frequency'],
+            'email': data['email'],
+            'created_at': datetime.utcnow()
+        }
+        result = medication_reminders_collection.insert_one(reminder)
+
+        # Schedule the email notification
+        if data['frequency'] == 'daily':
+            trigger = 'interval'
+            interval = {'days': 1}
+        elif data['frequency'] == 'weekly':
+            trigger = 'interval'
+            interval = {'weeks': 1}
+        elif data['frequency'] == 'monthly':
+            trigger = 'cron'
+            interval = {'day': reminder_time.day, 'hour': reminder_time.hour, 'minute': reminder_time.minute}
+
+        scheduler.add_job(
+            func=send_email,
+            trigger=trigger,
+            **interval,
+            args=[
+                data['email'],
+                f"Medication Reminder: {data['name']}",
+                f"Time to take your medication: {data['name']} (Dosage: {data['dosage']})\nInstructions: {data['instruction']}"
+            ],
+            id=str(result.inserted_id)
+        )
+        print(f"Scheduled email job: {str(result.inserted_id)}")
+
+        return jsonify({'success': True, 'message': 'Medication reminder created successfully', 'reminder_id': str(result.inserted_id)}), 201
+    except Exception as e:
+        print(f"Error creating medication reminder: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to create medication reminder: {str(e)}'}), 500
+
+
+# Route to update a medication reminder
+@app.route('/api/medication-reminders/<reminder_id>', methods=['PUT'])
+def update_medication_reminder(reminder_id):
+    try:
+        data = request.json
+        update_fields = {}
+        if 'name' in data:
+            update_fields['name'] = data['name']
+        if 'dosage' in data:
+            update_fields['dosage'] = data['dosage']
+        if 'instruction' in data:
+            update_fields['instruction'] = data['instruction']
+        if 'date_time' in data:
+            reminder_time = datetime.strptime(data['date_time'], '%Y-%m-%d %H:%M:%S')
+            if reminder_time < datetime.utcnow():
+                return jsonify({'success': False, 'message': 'Reminder date-time must be in the future'}), 400
+            update_fields['date_time'] = reminder_time
+        if 'frequency' in data:
+            if data['frequency'] not in ['daily', 'weekly', 'monthly']:
+                return jsonify({'success': False, 'message': 'Invalid frequency. Choose from daily, weekly, or monthly'}), 400
+            update_fields['frequency'] = data['frequency']
+        if 'email' in data:
+            update_fields['email'] = data['email']
+
+        # Update the reminder in the database
+        result = medication_reminders_collection.update_one({'_id': ObjectId(reminder_id)}, {'$set': update_fields})
+        if result.matched_count == 0:
+            return jsonify({'success': False, 'message': 'Reminder not found'}), 404
+
+        # Reschedule the email notification if date_time or frequency is updated
+        if 'date_time' in update_fields or 'frequency' in update_fields:
+            scheduler.remove_job(reminder_id)
+
+            # Determine the new schedule
+            if update_fields.get('frequency', data.get('frequency')) == 'daily':
+                trigger = 'interval'
+                interval = {'days': 1}
+            elif update_fields.get('frequency', data.get('frequency')) == 'weekly':
+                trigger = 'interval'
+                interval = {'weeks': 1}
+            elif update_fields.get('frequency', data.get('frequency')) == 'monthly':
+                reminder_time = update_fields.get('date_time', reminder_time)
+                trigger = 'cron'
+                interval = {'day': reminder_time.day, 'hour': reminder_time.hour, 'minute': reminder_time.minute}
+
+            scheduler.add_job(
+                func=send_email,
+                trigger=trigger,
+                **interval,
+                args=[
+                    update_fields.get('email', data['email']),
+                    f"Updated Medication Reminder: {update_fields.get('name', data['name'])}",
+                    f"Time to take your medication: {update_fields.get('name', data['name'])} (Dosage: {update_fields.get('dosage', data['dosage'])})\nInstructions: {update_fields.get('instruction', data['instruction'])}"
+                ],
+                id=reminder_id
+            )
+
+        return jsonify({'success': True, 'message': 'Medication reminder updated successfully'}), 200
+    except Exception as e:
+        print(f"Error updating medication reminder: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to update medication reminder: {str(e)}'}), 500
+
+
+# Route to delete a medication reminder
+@app.route('/api/medication-reminders/<reminder_id>', methods=['DELETE'])
+def delete_medication_reminder(reminder_id):
+    try:
+        # Delete the reminder from the database
+        result = medication_reminders_collection.delete_one({'_id': ObjectId(reminder_id)})
+        if result.deleted_count == 0:
+            return jsonify({'success': False, 'message': 'Reminder not found'}), 404
+
+        # Remove the scheduled job
+        scheduler.remove_job(reminder_id)
+
+        return jsonify({'success': True, 'message': 'Medication reminder deleted successfully'}), 200
+    except Exception as e:
+        print(f"Error deleting medication reminder: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to delete medication reminder: {str(e)}'}), 500
+
+# Route to get all medication reminders
+@app.route('/api/medication-reminders', methods=['GET'])
+def get_medication_reminders():
+    try:
+        reminders = list(medication_reminders_collection.find({}, {"_id": 1, "name": 1, "dosage": 1, "instruction": 1, "date_time": 1, "frequency": 1, "email": 1}))
+        # Convert ObjectId to string for JSON serialization
+        for reminder in reminders:
+            reminder["_id"] = str(reminder["_id"])
+        return jsonify({"success": True, "reminders": reminders}), 200
+    except Exception as e:
+        print(f"Error fetching medication reminders: {str(e)}")
+        return jsonify({"success": False, "message": f"Failed to fetch medication reminders: {str(e)}"}), 500
+
+# Route to create a routine
+@app.route('/api/routines', methods=['POST'])
+def create_routine():
+    try:
+        data = request.json
+        required_fields = ['title', 'description', 'scheduled_time', 'patient_name', 'frequency', 'email']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+
+        # Parse and validate the scheduled_time
+        scheduled_time = datetime.strptime(data['scheduled_time'], '%Y-%m-%d %H:%M:%S')
+        if scheduled_time < datetime.utcnow():
+            return jsonify({'success': False, 'message': 'Scheduled time must be in the future'}), 400
+
+        # Validate frequency
+        if data['frequency'] not in ['hourly', 'weekly', 'monthly']:
+            return jsonify({'success': False, 'message': 'Invalid frequency. Choose from hourly, weekly, or monthly'}), 400
+
+        # Save the routine to the database
+        routine = {
+            'title': data['title'],
+            'description': data['description'],
+            'scheduled_time': scheduled_time,
+            'patient_name': data['patient_name'],
+            'created_at': datetime.utcnow(),
+            'frequency': data['frequency'],
+            'email': data['email']
+        }
+        result = routines_collection.insert_one(routine)
+
+        # Schedule email notifications
+        schedule_routine_email(routine, str(result.inserted_id))
+
+        # Send confirmation email
+        send_email(
+            data['email'],
+            f"Routine Created: {data['title']}",
+            f"Your routine '{data['title']}' has been created and scheduled for {scheduled_time}."
+        )
+
+        return jsonify({'success': True, 'message': 'Routine created successfully', 'routine_id': str(result.inserted_id)}), 201
+    except Exception as e:
+        print(f"Error creating routine: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to create routine: {str(e)}'}), 500
+
+
+# Helper function to schedule routine email notifications
+def schedule_routine_email(routine, routine_id):
+    try:
+        if routine['frequency'] == 'hourly':
+            trigger = 'interval'
+            interval = {'hours': 1}
+        elif routine['frequency'] == 'weekly':
+            trigger = 'interval'
+            interval = {'weeks': 1}
+        elif routine['frequency'] == 'monthly':
+            trigger = 'cron'
+            interval = {'day': routine['scheduled_time'].day, 'hour': routine['scheduled_time'].hour, 'minute': routine['scheduled_time'].minute}
+
+        scheduler.add_job(
+            func=send_email,
+            trigger=trigger,
+            **interval,
+            args=[
+                routine['email'],
+                f"Routine Reminder: {routine['title']}",
+                f"It's time for your routine: {routine['title']}.\nDescription: {routine['description']}"
+            ],
+            id=routine_id
+        )
+    except Exception as e:
+        print(f"Error scheduling routine email: {str(e)}")
+
+
+# Route to get all routines
+@app.route('/api/routines', methods=['GET'])
+def get_routines():
+    try:
+        routines = list(routines_collection.find({}, {"_id": 1, "title": 1, "description": 1, "scheduled_time": 1, "patient_name": 1, "frequency": 1, "email": 1, "created_at": 1}))
+        for routine in routines:
+            routine["_id"] = str(routine["_id"])  # Convert ObjectId to string
+        return jsonify({'success': True, 'routines': routines}), 200
+    except Exception as e:
+        print(f"Error fetching routines: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to fetch routines: {str(e)}'}), 500
+
+
+# Route to update a routine
+@app.route('/api/routines/<routine_id>', methods=['PUT'])
+def update_routine(routine_id):
+    try:
+        data = request.json
+        update_fields = {}
+        if 'title' in data:
+            update_fields['title'] = data['title']
+        if 'description' in data:
+            update_fields['description'] = data['description']
+        if 'scheduled_time' in data:
+            scheduled_time = datetime.strptime(data['scheduled_time'], '%Y-%m-%d %H:%M:%S')
+            if scheduled_time < datetime.utcnow():
+                return jsonify({'success': False, 'message': 'Scheduled time must be in the future'}), 400
+            update_fields['scheduled_time'] = scheduled_time
+        if 'frequency' in data:
+            if data['frequency'] not in ['hourly', 'weekly', 'monthly']:
+                return jsonify({'success': False, 'message': 'Invalid frequency. Choose from hourly, weekly, or monthly'}), 400
+            update_fields['frequency'] = data['frequency']
+        if 'patient_name' in data:
+            update_fields['patient_name'] = data['patient_name']
+        if 'email' in data:
+            update_fields['email'] = data['email']
+
+        # Update the routine in the database
+        result = routines_collection.update_one({'_id': ObjectId(routine_id)}, {'$set': update_fields})
+        if result.matched_count == 0:
+            return jsonify({'success': False, 'message': 'Routine not found'}), 404
+
+        # Reschedule email notifications if necessary
+        if 'scheduled_time' in update_fields or 'frequency' in update_fields:
+            scheduler.remove_job(routine_id)
+            updated_routine = routines_collection.find_one({'_id': ObjectId(routine_id)})
+            schedule_routine_email(updated_routine, routine_id)
+
+        return jsonify({'success': True, 'message': 'Routine updated successfully'}), 200
+    except Exception as e:
+        print(f"Error updating routine: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to update routine: {str(e)}'}), 500
+
+
+# Route to delete a routine
+@app.route('/api/routines/<routine_id>', methods=['DELETE'])
+def delete_routine(routine_id):
+    try:
+        # Delete the routine from the database
+        result = routines_collection.delete_one({'_id': ObjectId(routine_id)})
+        if result.deleted_count == 0:
+            return jsonify({'success': False, 'message': 'Routine not found'}), 404
+
+        # Remove the scheduled job
+        scheduler.remove_job(routine_id)
+
+        return jsonify({'success': True, 'message': 'Routine deleted successfully'}), 200
+    except Exception as e:
+        print(f"Error deleting routine: {str(e)}")
+        return jsonify({'success': False, 'message': f'Failed to delete routine: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
